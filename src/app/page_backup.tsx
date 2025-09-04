@@ -527,7 +527,7 @@ export default function Page() {
                 </div>
               </form>
             </div>
-
+          </div>
             {/* Error Display */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
@@ -689,7 +689,6 @@ export default function Page() {
                 </div>
               </div>
             </footer>
-          </div>
         </>
       )}
     </main>
