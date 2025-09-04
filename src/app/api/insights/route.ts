@@ -1,0 +1,392 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { 
+      raw_transcript = "", 
+      meeting_info = {},
+      audio_url = null,
+      analysis_section = null
+    } = await req.json();
+
+    // Extract meeting details with defaults
+    const meetingTitle = meeting_info.title || "Reunión con Prospecto";
+    const participants = meeting_info.participants || [];
+    const meetingType = meeting_info.type || "prospecto";
+    const duration = meeting_info.duration || "desconocida";
+    const transcript = raw_transcript;
+
+    // Validate input - ensure transcript is provided and has minimum length
+    if (!transcript || transcript.trim().length < 50) {
+      return NextResponse.json(
+        { ok: false, error: 'Falta "transcript" o es muy corto (≥ 50 caracteres)' },
+        { status: 400 }
+      );
+    }
+
+    // Set timezone for Chile
+    const tz = "America/Santiago";
+    const fechaCL = new Date().toLocaleString("es-CL", { timeZone: tz });
+
+    // Define section-specific prompts
+    const sectionPrompts = {
+      overview: {
+        system: `Eres un analista de consultoría estratégica especializado en reuniones B2B. Genera un resumen ejecutivo profesional y conciso de la reunión usando formato Markdown estructurado.`,
+        user: `Analiza esta transcripción y genera un resumen ejecutivo estructurado en Markdown que incluya:
+
+## Resumen Ejecutivo
+
+### Objetivo de la Reunión
+[Describe el propósito principal]
+
+### Participantes Clave
+- **Nombre**: Rol y responsabilidades
+- **Nombre**: Rol y responsabilidades
+
+### Principales Temas Discutidos
+1. Tema 1: Descripción breve
+2. Tema 2: Descripción breve
+3. Tema 3: Descripción breve
+
+### Decisiones Tomadas
+- Decisión 1: Descripción y responsables
+- Decisión 2: Descripción y responsables
+
+### Próximos Pasos
+- **Acción**: Responsable | Fecha | Prioridad
+- **Acción**: Responsable | Fecha | Prioridad
+
+### Nivel de Engagement
+**Alto/Medio/Bajo** - Justificación breve
+
+### Riesgos Identificados
+- Riesgo 1: Descripción y mitigación
+- Riesgo 2: Descripción y mitigación
+
+Transcripción: ${transcript}`
+      },
+      ice: {
+        system: `Eres un especialista en priorización estratégica. Calcula ICE scores (Impact·Confidence·Ease/10) para todas las iniciativas identificadas en la reunión usando formato Markdown estructurado.`,
+        user: `Identifica todas las iniciativas, proyectos o oportunidades mencionadas en esta reunión y calcula su ICE score usando este formato:
+
+## ICE Scoring Analysis
+
+### Metodología
+**ICE = (Impact × Confidence × Ease) / 10**
+
+- **Impact**: 1-10 (impacto en el negocio)
+- **Confidence**: 1-10 (confianza en el éxito)  
+- **Ease**: 1-10 (facilidad de implementación)
+
+### Iniciativas Priorizadas
+
+| Iniciativa | Impact | Confidence | Ease | ICE Score | Prioridad |
+|------------|--------|------------|------|-----------|-----------|
+| Iniciativa 1 | 8 | 7 | 6 | 3.36 | Alta |
+| Iniciativa 2 | 6 | 8 | 9 | 4.32 | Alta |
+
+### Análisis Detallado
+
+#### Iniciativa 1: [Nombre]
+- **Impact (8/10)**: [Justificación del impacto]
+- **Confidence (7/10)**: [Justificación de la confianza]
+- **Ease (6/10)**: [Justificación de la facilidad]
+- **Recomendación**: [Acción sugerida]
+
+#### Quick Wins (ICE > 4.0)
+- [Lista de iniciativas de alto impacto y fácil implementación]
+
+#### Big Bets (Impact > 7, Ease < 6)
+- [Lista de iniciativas de alto impacto pero complejas]
+
+Transcripción: ${transcript}`
+      },
+      roi: {
+        system: `Eres un analista financiero especializado en ROI. Calcula el retorno de inversión estimado para las oportunidades identificadas usando formato Markdown estructurado.`,
+        user: `Analiza esta reunión y calcula el ROI estimado para las oportunidades identificadas usando este formato:
+
+## ROI Analysis
+
+### Oportunidades Identificadas
+
+| Oportunidad | Inversión (CLP) | Inversión (USD) | Beneficios Anuales | Payback (meses) | ROI (%) |
+|-------------|-----------------|-----------------|-------------------|-----------------|---------|
+| Oportunidad 1 | 10,000,000 | 12,000 | 15,000,000 | 8 | 50% |
+| Oportunidad 2 | 5,000,000 | 6,000 | 8,000,000 | 7.5 | 60% |
+
+### Análisis Detallado
+
+#### Oportunidad 1: [Nombre]
+- **Inversión Total**: $10,000,000 CLP ($12,000 USD)
+- **Beneficios Esperados**: $15,000,000 CLP anuales
+- **Payback Period**: 8 meses
+- **ROI**: 50% anual
+- **Variables Críticas**: [Lista de variables que afectan el ROI]
+
+#### Oportunidad 2: [Nombre]
+- **Inversión Total**: $5,000,000 CLP ($6,000 USD)
+- **Beneficios Esperados**: $8,000,000 CLP anuales
+- **Payback Period**: 7.5 meses
+- **ROI**: 60% anual
+- **Variables Críticas**: [Lista de variables que afectan el ROI]
+
+### Resumen Financiero
+- **Inversión Total**: $15,000,000 CLP ($18,000 USD)
+- **Beneficios Anuales**: $23,000,000 CLP
+- **ROI Promedio**: 53%
+- **Payback Promedio**: 7.8 meses
+
+### Variables Faltantes (TBD)
+- [Lista de variables que necesitan ser definidas para cálculo preciso]
+
+### Recomendaciones
+- **Prioridad Alta**: [Oportunidades con mejor ROI]
+- **Consideraciones**: [Factores adicionales a evaluar]
+
+Transcripción: ${transcript}`
+      },
+      insights: {
+        system: `Eres un consultor estratégico senior. Identifica insights profundos y oportunidades de valor usando formato Markdown estructurado.`,
+        user: `Analiza esta reunión y genera insights estratégicos usando este formato:
+
+## Strategic Insights
+
+### Mapa de Dolores y Ganancias
+
+#### Dolores Identificados
+- **Dolor 1**: [Descripción] - **Impacto**: Alto/Medio/Bajo
+- **Dolor 2**: [Descripción] - **Impacto**: Alto/Medio/Bajo
+- **Dolor 3**: [Descripción] - **Impacto**: Alto/Medio/Bajo
+
+#### Ganancias Deseadas
+- **Ganancia 1**: [Descripción] - **Prioridad**: Alta/Media/Baja
+- **Ganancia 2**: [Descripción] - **Prioridad**: Alta/Media/Baja
+- **Ganancia 3**: [Descripción] - **Prioridad**: Alta/Media/Baja
+
+### Objeciones y Respuestas
+
+| Objeción | Respuesta Sugerida | Evidencia de Apoyo |
+|----------|-------------------|-------------------|
+| "Es muy caro" | [Respuesta estructurada] | [Datos/ejemplos] |
+| "No tenemos tiempo" | [Respuesta estructurada] | [Datos/ejemplos] |
+
+### Oportunidades de Valor
+
+#### Quick Wins
+- **Oportunidad**: [Descripción] - **Impacto**: [Justificación]
+- **Oportunidad**: [Descripción] - **Impacto**: [Justificación]
+
+#### Big Bets
+- **Oportunidad**: [Descripción] - **Impacto**: [Justificación]
+- **Oportunidad**: [Descripción] - **Impacto**: [Justificación]
+
+### Riesgos y Mitigaciones
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|--------|--------------|---------|------------|
+| Riesgo 1 | Alta/Media/Baja | Alto/Medio/Bajo | [Estrategia de mitigación] |
+| Riesgo 2 | Alta/Media/Baja | Alto/Medio/Bajo | [Estrategia de mitigación] |
+
+### Recomendaciones Estratégicas
+
+1. **Recomendación 1**: [Descripción detallada]
+   - **Justificación**: [Por qué es importante]
+   - **Acciones**: [Qué hacer específicamente]
+
+2. **Recomendación 2**: [Descripción detallada]
+   - **Justificación**: [Por qué es importante]
+   - **Acciones**: [Qué hacer específicamente]
+
+### Próximos Pasos Críticos
+- [Acción específica con responsable y fecha]
+- [Acción específica con responsable y fecha]
+
+Transcripción: ${transcript}`
+      },
+      followup: {
+        system: `Eres un especialista en gestión de relaciones comerciales. Diseña un plan de seguimiento estratégico usando formato Markdown estructurado.`,
+        user: `Crea un plan de seguimiento detallado usando este formato:
+
+## Follow-up Plan
+
+### Timeline de Seguimiento
+
+| Fecha | Acción | Canal | CTA | Responsable | Estado |
+|-------|--------|-------|-----|-------------|--------|
+| 2025-01-15 | Envío de propuesta | Email | Revisar propuesta | [Nombre] | Pendiente |
+| 2025-01-18 | Llamada de seguimiento | Teléfono | Agendar demo | [Nombre] | Pendiente |
+| 2025-01-22 | Demo técnico | Video | Decisión de compra | [Nombre] | Pendiente |
+
+### Secuencia Detallada
+
+#### Semana 1: Inmediato (0-7 días)
+- **Día 1**: Envío de resumen de reunión
+  - **Canal**: Email
+  - **CTA**: Confirmar recepción y próximos pasos
+  - **Materiales**: Resumen ejecutivo, propuesta inicial
+
+- **Día 3**: Llamada de seguimiento
+  - **Canal**: Teléfono
+  - **CTA**: Resolver dudas y agendar demo
+  - **Materiales**: FAQ, casos de éxito
+
+#### Semana 2: Profundización (8-14 días)
+- **Día 8**: Demo técnico
+  - **Canal**: Video conferencia
+  - **CTA**: Evaluación técnica y feedback
+  - **Materiales**: Demo personalizado, documentación técnica
+
+- **Día 12**: Envío de propuesta formal
+  - **Canal**: Email + Documento
+  - **CTA**: Revisión y feedback
+  - **Materiales**: Propuesta detallada, pricing
+
+#### Semana 3: Cierre (15-21 días)
+- **Día 15**: Llamada de negociación
+  - **Canal**: Teléfono
+  - **CTA**: Resolver objeciones y cerrar
+  - **Materiales**: Contrato, términos y condiciones
+
+### Canales de Comunicación
+
+| Canal | Frecuencia | Propósito | Efectividad |
+|-------|------------|-----------|-------------|
+| Email | Diario | Información, documentos | Alta |
+| Teléfono | 2-3x/semana | Resolución de dudas | Muy Alta |
+| Video | 1x/semana | Demos, presentaciones | Alta |
+| WhatsApp | Según necesidad | Comunicación rápida | Media |
+
+### CTAs Específicos
+
+#### Email CTAs
+- "Confirmar recepción del resumen"
+- "Agendar demo técnico"
+- "Revisar propuesta y dar feedback"
+- "Firmar contrato"
+
+#### Llamada CTAs
+- "Resolver dudas técnicas"
+- "Negociar términos"
+- "Confirmar decisión"
+- "Agendar próxima reunión"
+
+### Materiales de Apoyo
+
+#### Documentos Necesarios
+- [ ] Resumen ejecutivo de la reunión
+- [ ] Propuesta técnica detallada
+- [ ] Casos de éxito relevantes
+- [ ] Pricing y términos comerciales
+- [ ] Contrato base
+- [ ] FAQ técnico
+
+#### Presentaciones
+- [ ] Demo técnico personalizado
+- [ ] Presentación ejecutiva
+- [ ] ROI calculator
+- [ ] Timeline de implementación
+
+### Métricas de Éxito
+
+| Métrica | Objetivo | Actual | Gap |
+|---------|----------|--------|-----|
+| Tiempo de respuesta | < 2 horas | [Medir] | [Calcular] |
+| Tasa de apertura email | > 80% | [Medir] | [Calcular] |
+| Engagement en demo | > 60 min | [Medir] | [Calcular] |
+| Tiempo hasta decisión | < 21 días | [Medir] | [Calcular] |
+
+### Riesgos y Mitigaciones
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|--------|--------------|---------|------------|
+| No respuesta | Media | Alto | Llamada de seguimiento |
+| Objeciones de precio | Alta | Alto | ROI calculator, casos de éxito |
+| Competencia | Media | Medio | Diferenciación, valor único |
+
+### Próximos Pasos Inmediatos
+1. **Hoy**: Enviar resumen de reunión
+2. **Mañana**: Preparar demo personalizado
+3. **En 3 días**: Llamada de seguimiento
+4. **En 1 semana**: Demo técnico
+
+Transcripción: ${transcript}`
+      }
+    };
+
+    // Select prompt based on analysis section
+    const selectedPrompt = analysis_section && sectionPrompts[analysis_section as keyof typeof sectionPrompts] 
+      ? sectionPrompts[analysis_section as keyof typeof sectionPrompts]
+      : {
+          system: `Eres MeetingIntel Agent. Toma como insumo transcripciones crudas (o audios) de reuniones con prospectos o clientes activos y genera una salida en texto estructurado lista para copiar y pegar en un documento. El agente opera en español por defecto, y mantiene el idioma original de la reunión.
+
+El flujo que sigue es el siguiente: limpia la transcripción, extrae citas clave, genera una minuta con decisiones, próximos pasos y riesgos, identifica sentimientos y niveles de energía por participante, construye un mapa de dolores y ganancias, identifica objeciones junto con respuestas sugeridas, prioriza iniciativas con ICE, clasifica en quick wins vs big bets, sugiere una estructura de deck comercial de 5 slides, calcula ROI estimado y genera una secuencia de seguimiento con CTA y canales sugeridos.
+
+Además, incluye automatizaciones opcionales como crear Google Docs, Slides, recordatorios en n8n, y almacenamiento ordenado de documentos. Este agente espera tres entradas: raw_transcript, meeting_info, y opcionalmente audio_url.
+
+Debe responder rápidamente (≤2 min) para reuniones menores a 1h, calcular ICE como Impact·Confidence·Ease/10, usar CLP como moneda por defecto (con equivalente USD), y devolver todas las fechas en formato ISO para timezone America/Santiago. Si faltan datos para ROI, marcar "payback_meses" como "TBD" y listar variables faltantes.
+
+No debe traducir ni interpretar el contenido más allá de lo explícito en la transcripción y meeting_info. Debe siempre devolver un único entregable en texto estructurado alineado al tono profesional y conciso esperado en un contexto B2B consultivo, listo para ser pegado directamente en un documento, sin formato JSON.`,
+          user: `raw_transcript: ${transcript}
+
+meeting_info: {
+  title: "${meetingTitle}",
+  date: "${fechaCL}",
+  timezone: "America/Santiago",
+  type: "${meetingType}",
+  duration: "${duration}",
+  participants: [${participants.length > 0 ? participants.map((p: string) => `"${p}"`).join(', ') : ''}]
+}
+
+${audio_url ? `audio_url: "${audio_url}"` : ''}
+
+Analiza esta transcripción siguiendo el flujo completo de MeetingIntel Agent y genera el documento estructurado listo para copiar y pegar.`
+        };
+
+    // Make request to OpenAI API with correct endpoint and format
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini", // Using correct model name
+        messages: [
+          { role: "system", content: selectedPrompt.system },
+          { role: "user", content: selectedPrompt.user },
+        ],
+        temperature: 0.2,
+        max_tokens: 4000,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("OpenAI API Error:", errorData);
+      return NextResponse.json(
+        { ok: false, error: "Error al procesar con OpenAI" }, 
+        { status: 500 }
+      );
+    }
+
+    const data = await response.json();
+    
+    // Extract the content from the response
+    const markdown = data.choices?.[0]?.message?.content || "No se recibió salida del modelo.";
+
+    return NextResponse.json({
+      ok: true,
+      meetingTitle,
+      fechaCL,
+      markdown,
+      insights: markdown, // For section-specific responses
+      section: analysis_section || 'full'
+    });
+  } catch (error: any) {
+    console.error("API Error:", error);
+    return NextResponse.json(
+      { ok: false, error: error?.message || "Error interno del servidor" }, 
+      { status: 500 }
+    );
+  }
+}
