@@ -253,25 +253,152 @@ export default function Page() {
     }
   }, [markdown]);
 
+  // McKinsey-style components for professional reports
   const markdownComponents = {
-    h1: ({children}: any) => <h1 className="text-3xl font-bold text-slate-900 mb-6 pb-3 border-b border-slate-200">{children}</h1>,
-    h2: ({children}: any) => <h2 className="text-2xl font-semibold text-slate-800 mb-4 mt-8">{children}</h2>,
-    h3: ({children}: any) => <h3 className="text-lg font-semibold text-slate-700 mb-3 mt-6">{children}</h3>,
-    p: ({children}: any) => <p className="text-slate-700 mb-4 leading-relaxed">{children}</p>,
-    ul: ({children}: any) => <ul className="space-y-2 mb-6">{children}</ul>,
-    ol: ({children}: any) => <ol className="space-y-2 mb-6 ml-6">{children}</ol>,
-    li: ({children}: any) => <li className="flex items-start gap-3 text-slate-700">
-      <span className="w-2 h-2 bg-slate-400 rounded-full mt-2 flex-shrink-0" />
-      <span>{children}</span>
-    </li>,
-    strong: ({children}: any) => <strong className="font-semibold text-slate-900">{children}</strong>,
-    em: ({children}: any) => <em className="italic text-slate-600">{children}</em>,
-    blockquote: ({children}: any) => <blockquote className="border-l-4 border-slate-300 pl-6 py-2 bg-slate-50 rounded-r-lg my-6 italic text-slate-600">{children}</blockquote>,
-    code: ({children}: any) => <code className="bg-slate-100 px-2 py-1 rounded text-sm font-mono text-slate-800">{children}</code>,
-    pre: ({children}: any) => <pre className="bg-slate-900 text-slate-100 p-6 rounded-xl overflow-x-auto text-sm my-6 font-mono">{children}</pre>,
-    table: ({children}: any) => <div className="overflow-x-auto my-6"><table className="w-full border-collapse border border-slate-200 rounded-lg overflow-hidden">{children}</table></div>,
-    th: ({children}: any) => <th className="border border-slate-200 bg-slate-50 px-4 py-3 text-left font-semibold text-slate-700">{children}</th>,
-    td: ({children}: any) => <td className="border border-slate-200 px-4 py-3 text-slate-700">{children}</td>,
+    h1: ({children}: any) => (
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-slate-900 mb-4 font-serif tracking-tight">{children}</h1>
+        <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-slate-600 rounded-full"></div>
+      </div>
+    ),
+    h2: ({children}: any) => (
+      <div className="mb-6 mt-12">
+        <h2 className="text-2xl font-bold text-slate-800 mb-3 font-serif">{children}</h2>
+        <div className="w-16 h-0.5 bg-slate-300 rounded-full"></div>
+      </div>
+    ),
+    h3: ({children}: any) => (
+      <h3 className="text-xl font-semibold text-slate-700 mb-4 mt-8 font-serif">{children}</h3>
+    ),
+    h4: ({children}: any) => (
+      <h4 className="text-lg font-semibold text-slate-700 mb-3 mt-6">{children}</h4>
+    ),
+    p: ({children}: any) => (
+      <p className="text-slate-700 mb-6 leading-relaxed text-base">{children}</p>
+    ),
+    ul: ({children}: any) => (
+      <ul className="space-y-3 mb-8">{children}</ul>
+    ),
+    ol: ({children}: any) => (
+      <ol className="space-y-3 mb-8 ml-6 list-decimal list-outside">{children}</ol>
+    ),
+    li: ({children}: any) => (
+      <li className="flex items-start gap-4 text-slate-700 leading-relaxed">
+        <div className="w-2 h-2 bg-blue-600 rounded-full mt-3 flex-shrink-0"></div>
+        <span className="flex-1">{children}</span>
+      </li>
+    ),
+    strong: ({children}: any) => (
+      <strong className="font-bold text-slate-900">{children}</strong>
+    ),
+    em: ({children}: any) => (
+      <em className="italic text-slate-600 font-medium">{children}</em>
+    ),
+    blockquote: ({children}: any) => (
+      <div className="border-l-4 border-blue-600 bg-blue-50 pl-8 py-6 my-8 rounded-r-lg">
+        <div className="flex items-start gap-4">
+          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="text-blue-900 font-medium italic leading-relaxed">{children}</div>
+        </div>
+      </div>
+    ),
+    code: ({children}: any) => (
+      <code className="bg-slate-100 px-3 py-1 rounded-md text-sm font-mono text-slate-800 border border-slate-200">{children}</code>
+    ),
+    pre: ({children}: any) => (
+      <pre className="bg-slate-900 text-slate-100 p-8 rounded-xl overflow-x-auto text-sm my-8 font-mono border border-slate-700 shadow-lg">{children}</pre>
+    ),
+    table: ({children}: any) => (
+      <div className="overflow-x-auto my-8 shadow-lg rounded-xl border border-slate-200">
+        <table className="w-full border-collapse bg-white">{children}</table>
+      </div>
+    ),
+    th: ({children}: any) => (
+      <th className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 text-left font-bold text-slate-800 text-sm uppercase tracking-wider border-b-2 border-slate-200">
+        {children}
+      </th>
+    ),
+    td: ({children}: any) => (
+      <td className="px-6 py-4 text-slate-700 border-b border-slate-100 text-sm">
+        {children}
+      </td>
+    ),
+    // Custom components for McKinsey-style elements
+    div: ({children, className}: any) => {
+      if (className?.includes('mckinsey-metric')) {
+        return (
+          <div className="bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-200 rounded-xl p-6 my-6 shadow-sm">
+            {children}
+          </div>
+        );
+      }
+      if (className?.includes('mckinsey-chart')) {
+        return (
+          <div className="bg-white border border-slate-200 rounded-xl p-6 my-8 shadow-lg">
+            {children}
+          </div>
+        );
+      }
+      if (className?.includes('mckinsey-insight')) {
+        return (
+          <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-l-4 border-emerald-500 rounded-r-lg p-6 my-6">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="text-emerald-900 font-medium">{children}</div>
+            </div>
+          </div>
+        );
+      }
+      if (className?.includes('mckinsey-kpi')) {
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+            {children}
+          </div>
+        );
+      }
+      if (className?.includes('mckinsey-kpi-item')) {
+        return (
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+            {children}
+          </div>
+        );
+      }
+      if (className?.includes('mckinsey-progress')) {
+        return (
+          <div className="bg-white border border-slate-200 rounded-xl p-6 my-6 shadow-sm">
+            {children}
+          </div>
+        );
+      }
+      return <div className={className}>{children}</div>;
+    },
+    // Custom span for KPI values
+    span: ({children, className}: any) => {
+      if (className?.includes('kpi-value')) {
+        return (
+          <span className="text-3xl font-bold text-slate-900">{children}</span>
+        );
+      }
+      if (className?.includes('kpi-label')) {
+        return (
+          <span className="text-sm font-medium text-slate-600 uppercase tracking-wider">{children}</span>
+        );
+      }
+      if (className?.includes('kpi-change')) {
+        return (
+          <span className="text-sm font-medium text-emerald-600">{children}</span>
+        );
+      }
+      return <span className={className}>{children}</span>;
+    }
   };
 
   return (
@@ -630,27 +757,116 @@ export default function Page() {
                     </nav>
                   </div>
 
-                  {/* Tab Content */}
-                  <div className="p-8 bg-slate-50 rounded-xl border border-slate-200">
+                  {/* Tab Content with Enhanced McKinsey Design */}
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                     {analysisSections[activeTab as keyof AnalysisSections].loading ? (
-                      <div className="flex items-center justify-center py-16">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
-                          <span className="text-slate-600">Analizando {activeTab}...</span>
+                      <div className="flex items-center justify-center py-20">
+                        <div className="flex flex-col items-center gap-6">
+                          <div className="relative">
+                            <div className="w-16 h-16 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
+                            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-slate-300 rounded-full animate-pulse" />
+                          </div>
+                          <div className="text-center">
+                            <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                              Generando {activeTab === 'overview' ? 'Resumen Ejecutivo' : 
+                                        activeTab === 'ice' ? 'ICE Scoring' :
+                                        activeTab === 'roi' ? 'ROI Analysis' :
+                                        activeTab === 'insights' ? 'Strategic Insights' :
+                                        'Follow-up Plan'}...
+                            </h3>
+                            <p className="text-slate-600">Aplicando metodología McKinsey con IA avanzada</p>
+                          </div>
                         </div>
                       </div>
                     ) : analysisSections[activeTab as keyof AnalysisSections].content ? (
-                      <div className="prose prose-slate max-w-none">
-                        <ReactMarkdown 
-                          remarkPlugins={[remarkGfm]}
-                          components={markdownComponents}
-                        >
-                          {analysisSections[activeTab as keyof AnalysisSections].content}
-                        </ReactMarkdown>
+                      <div className="p-10">
+                        {/* Header with section info */}
+                        <div className="mb-8 pb-6 border-b border-slate-200">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                              activeTab === 'overview' ? 'bg-blue-100' :
+                              activeTab === 'ice' ? 'bg-emerald-100' :
+                              activeTab === 'roi' ? 'bg-purple-100' :
+                              activeTab === 'insights' ? 'bg-orange-100' :
+                              'bg-slate-100'
+                            }`}>
+                              {activeTab === 'overview' && (
+                                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              {activeTab === 'ice' && (
+                                <svg className="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              {activeTab === 'roi' && (
+                                <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              {activeTab === 'insights' && (
+                                <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              {activeTab === 'followup' && (
+                                <svg className="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
+                            <div>
+                              <h2 className="text-2xl font-bold text-slate-900 font-serif">
+                                {activeTab === 'overview' ? 'Resumen Ejecutivo' : 
+                                 activeTab === 'ice' ? 'ICE Scoring' :
+                                 activeTab === 'roi' ? 'ROI Analysis' :
+                                 activeTab === 'insights' ? 'Strategic Insights' :
+                                 'Follow-up Plan'}
+                              </h2>
+                              <p className="text-slate-600 mt-1">
+                                {activeTab === 'overview' ? 'Análisis estratégico de alto nivel' : 
+                                 activeTab === 'ice' ? 'Evaluación de Impacto, Confianza y Esfuerzo' :
+                                 activeTab === 'roi' ? 'Análisis de Retorno de Inversión' :
+                                 activeTab === 'insights' ? 'Insights estratégicos y recomendaciones' :
+                                 'Plan de seguimiento y próximos pasos'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content with enhanced styling */}
+                        <div className="prose prose-slate max-w-none">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={markdownComponents}
+                          >
+                            {analysisSections[activeTab as keyof AnalysisSections].content}
+                          </ReactMarkdown>
+                        </div>
                       </div>
                     ) : (
-                      <div className="text-center py-16 text-slate-500">
-                        <p>Haz clic en &quot;Analizar&quot; para generar el {activeTab}</p>
+                      <div className="text-center py-20">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                          <svg className="w-8 h-8 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                          {activeTab === 'overview' ? 'Resumen Ejecutivo' : 
+                           activeTab === 'ice' ? 'ICE Scoring' :
+                           activeTab === 'roi' ? 'ROI Analysis' :
+                           activeTab === 'insights' ? 'Strategic Insights' :
+                           'Follow-up Plan'}
+                        </h3>
+                        <p className="text-slate-600">
+                          Haz clic en &quot;Analizar&quot; para generar el {activeTab === 'overview' ? 'resumen ejecutivo' : 
+                          activeTab === 'ice' ? 'ICE scoring' :
+                          activeTab === 'roi' ? 'análisis de ROI' :
+                          activeTab === 'insights' ? 'insights estratégicos' :
+                          'plan de seguimiento'}
+                        </p>
                       </div>
                     )}
                   </div>
