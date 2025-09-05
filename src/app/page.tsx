@@ -16,6 +16,7 @@ interface AnalysisSections {
   roi: AnalysisSection;
   insights: AnalysisSection;
   followup: AnalysisSection;
+  energy: AnalysisSection;
   consolidated: AnalysisSection;
 }
 
@@ -52,6 +53,7 @@ export default function Page() {
     roi: { loading: false, content: '' },
     insights: { loading: false, content: '' },
     followup: { loading: false, content: '' },
+    energy: { loading: false, content: '' },
     consolidated: { loading: false, content: '' }
   });
 
@@ -134,6 +136,12 @@ ${cleanContent(sections.insights.content, 'strategic insights')}
 ## 📅 PLAN DE SEGUIMIENTO
 
 ${cleanContent(sections.followup.content, 'follow-up plan')}
+
+---
+
+## ⚡ ANÁLISIS DE ENERGÍA Y SENTIMIENTO
+
+${cleanContent(sections.energy.content, 'análisis de energía')}
 
 ---
 
@@ -304,6 +312,7 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
       roi: { loading: false, content: '' },
       insights: { loading: false, content: '' },
       followup: { loading: false, content: '' },
+      energy: { loading: false, content: '' },
       consolidated: { loading: false, content: '' }
     });
     
@@ -342,6 +351,7 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
       analyzeSection('roi');
       analyzeSection('insights');
       analyzeSection('followup');
+      analyzeSection('energy');
       
       // Set active tab to overview once analysis starts
       setActiveTab('overview');
@@ -630,13 +640,14 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
                 <p className="text-sm text-slate-500">Generando insights estratégicos de nivel consultoría...</p>
               </div>
               
-              <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-4 max-w-2xl mx-auto">
+              <div className="mt-8 grid grid-cols-2 md:grid-cols-6 gap-4 max-w-3xl mx-auto">
                 {[
                   { label: "Resumen Ejecutivo", status: "processing" },
                   { label: "ICE Scoring", status: "pending" },
                   { label: "ROI Analysis", status: "pending" },
                   { label: "Strategic Insights", status: "pending" },
-                  { label: "Follow-up Plan", status: "pending" }
+                  { label: "Follow-up Plan", status: "pending" },
+                  { label: "Energy Analysis", status: "pending" }
                 ].map((item, index) => (
                   <div key={item.label} className="flex flex-col items-center gap-2">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -906,6 +917,7 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
                         { key: 'roi', label: 'ROI Analysis' },
                         { key: 'insights', label: 'Strategic Insights' },
                         { key: 'followup', label: 'Follow-up Plan' },
+                        { key: 'energy', label: '⚡ Energy Analysis' },
                         { key: 'consolidated', label: '📊 Reporte Consolidado' }
                       ].map((tab) => {
                         const section = analysisSections[tab.key as keyof AnalysisSections];
@@ -959,6 +971,7 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
                                         activeTab === 'roi' ? 'ROI Analysis' :
                                         activeTab === 'insights' ? 'Strategic Insights' :
                                         activeTab === 'followup' ? 'Follow-up Plan' :
+                                        activeTab === 'energy' ? 'Energy Analysis' :
                                         'Reporte Consolidado'}...
                             </h3>
                             <p className="text-slate-600">Aplicando metodología McKinsey con IA avanzada</p>
@@ -976,6 +989,7 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
                               activeTab === 'roi' ? 'bg-purple-100' :
                               activeTab === 'insights' ? 'bg-orange-100' :
                               activeTab === 'followup' ? 'bg-slate-100' :
+                              activeTab === 'energy' ? 'bg-yellow-100' :
                               'bg-indigo-100'
                             }`}>
                               {activeTab === 'overview' && (
@@ -1004,6 +1018,11 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
                                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                               )}
+                              {activeTab === 'energy' && (
+                                <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                                </svg>
+                              )}
                               {activeTab === 'consolidated' && (
                                 <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
@@ -1017,6 +1036,7 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
                                  activeTab === 'roi' ? 'ROI Analysis' :
                                  activeTab === 'insights' ? 'Strategic Insights' :
                                  activeTab === 'followup' ? 'Follow-up Plan' :
+                                 activeTab === 'energy' ? '⚡ Energy Analysis' :
                                  '📊 Reporte Consolidado'}
                               </h2>
                               <p className="text-slate-600 mt-1">
@@ -1025,6 +1045,7 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
                                  activeTab === 'roi' ? 'Análisis de Retorno de Inversión' :
                                  activeTab === 'insights' ? 'Insights estratégicos y recomendaciones' :
                                  activeTab === 'followup' ? 'Plan de seguimiento y próximos pasos' :
+                                 activeTab === 'energy' ? 'Análisis de energía, sentimiento y perfil de participantes' :
                                  'Vista consolidada con todas las métricas y tablas'}
                               </p>
                             </div>

@@ -274,8 +274,6 @@ Transcripción: ${transcript}`
         system: `Eres un especialista en gestión de relaciones comerciales. Diseña un plan de seguimiento estratégico usando formato Markdown estructurado.`,
         user: `Crea un plan de seguimiento detallado usando este formato:
 
-## Follow-up Plan
-
 ### Timeline de Seguimiento
 
 | Fecha | Acción | Canal | CTA | Responsable | Estado |
@@ -377,6 +375,81 @@ Transcripción: ${transcript}`
 4. **En 1 semana**: Demo técnico
 
 Transcripción: ${transcript}`
+      },
+      energy: {
+        system: `Eres un analista de comportamiento y dinámicas de grupo. Analiza la energía, sentimiento y perfil de los participantes usando formato Markdown estructurado.`,
+        user: `Analiza la energía, sentimiento y perfil de los participantes en esta reunión usando este formato:
+
+## Análisis de Energía y Sentimiento
+
+### Perfil de Participantes
+
+#### [Nombre del Participante]
+- **Rol**: [Rol en la reunión]
+- **Nivel de Energía**: Alto/Medio/Bajo (1-10)
+- **Sentimiento General**: Positivo/Neutral/Negativo
+- **Estilo de Comunicación**: [Directo/Diplomático/Analítico/Expresivo]
+- **Nivel de Engagement**: Alto/Medio/Bajo
+- **Principales Preocupaciones**: [Lista de preocupaciones identificadas]
+- **Intereses Clave**: [Lista de intereses identificados]
+
+#### [Nombre del Participante]
+- **Rol**: [Rol en la reunión]
+- **Nivel de Energía**: Alto/Medio/Bajo (1-10)
+- **Sentimiento General**: Positivo/Neutral/Negativo
+- **Estilo de Comunicación**: [Directo/Diplomático/Analítico/Expresivo]
+- **Nivel de Engagement**: Alto/Medio/Bajo
+- **Principales Preocupaciones**: [Lista de preocupaciones identificadas]
+- **Intereses Clave**: [Lista de intereses identificados]
+
+### Análisis de Dinámicas de Grupo
+
+#### Energía General de la Reunión
+- **Nivel Promedio**: [1-10]
+- **Momento de Mayor Energía**: [Descripción del momento]
+- **Momento de Menor Energía**: [Descripción del momento]
+- **Factores que Aumentaron la Energía**: [Lista de factores]
+- **Factores que Disminuyeron la Energía**: [Lista de factores]
+
+#### Sentimiento General
+- **Sentimiento Promedio**: Positivo/Neutral/Negativo
+- **Confianza en la Solución**: Alta/Media/Baja
+- **Urgencia Percibida**: Alta/Media/Baja
+- **Resistencia al Cambio**: Alta/Media/Baja
+
+### Mapa de Influencia
+
+| Participante | Influencia | Poder de Decisión | Nivel de Apoyo | Riesgo de Objeción |
+|--------------|------------|-------------------|----------------|-------------------|
+| [Nombre] | Alta/Media/Baja | Alto/Medio/Bajo | Alto/Medio/Bajo | Alto/Medio/Bajo |
+| [Nombre] | Alta/Media/Baja | Alto/Medio/Bajo | Alto/Medio/Bajo | Alto/Medio/Bajo |
+
+### Insights de Comportamiento
+
+#### Patrones Identificados
+- **Patrón 1**: [Descripción del patrón observado]
+- **Patrón 2**: [Descripción del patrón observado]
+- **Patrón 3**: [Descripción del patrón observado]
+
+#### Señales de Compromiso
+- **Señales Positivas**: [Lista de señales que indican interés]
+- **Señales de Preocupación**: [Lista de señales que indican resistencia]
+- **Señales de Urgencia**: [Lista de señales que indican necesidad inmediata]
+
+### Recomendaciones de Enfoque
+
+#### Para el Próximo Contacto
+- **Enfoque Principal**: [Cómo abordar al participante clave]
+- **Canal Preferido**: [Canal de comunicación preferido]
+- **Momento Óptimo**: [Cuándo contactar]
+- **Mensaje Clave**: [Qué mensaje transmitir]
+
+#### Estrategia de Comunicación
+- **Tono Recomendado**: [Tono de comunicación sugerido]
+- **Enfoque de Valor**: [Cómo presentar el valor]
+- **Manejo de Objeciones**: [Estrategia para manejar resistencias]
+
+Transcripción: ${transcript}`
       }
     };
 
@@ -387,6 +460,13 @@ Transcripción: ${transcript}`
           system: `Eres MeetingIntel Agent. Toma como insumo transcripciones crudas (o audios) de reuniones con prospectos o clientes activos y genera una salida en texto estructurado lista para copiar y pegar en un documento. El agente opera en español por defecto, y mantiene el idioma original de la reunión.
 
 El flujo que sigue es el siguiente: limpia la transcripción, extrae citas clave, genera una minuta con decisiones, próximos pasos y riesgos, identifica sentimientos y niveles de energía por participante, construye un mapa de dolores y ganancias, identifica objeciones junto con respuestas sugeridas, prioriza iniciativas con ICE, clasifica en quick wins vs big bets, sugiere una estructura de deck comercial de 5 slides, calcula ROI estimado y genera una secuencia de seguimiento con CTA y canales sugeridos.
+
+IMPORTANTE: Debes incluir SIEMPRE un análisis detallado de energía, sentimiento y perfil de participantes que incluya:
+- Perfil individual de cada participante (rol, nivel de energía 1-10, sentimiento, estilo de comunicación, engagement)
+- Análisis de dinámicas de grupo (energía general, sentimiento promedio, confianza, urgencia, resistencia)
+- Mapa de influencia (influencia, poder de decisión, nivel de apoyo, riesgo de objeción)
+- Insights de comportamiento (patrones identificados, señales de compromiso)
+- Recomendaciones de enfoque (estrategia de comunicación, manejo de objeciones)
 
 Además, incluye automatizaciones opcionales como crear Google Docs, Slides, recordatorios en n8n, y almacenamiento ordenado de documentos. Este agente espera tres entradas: raw_transcript, meeting_info, y opcionalmente audio_url.
 
