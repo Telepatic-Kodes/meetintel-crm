@@ -377,77 +377,121 @@ Transcripción: ${transcript}`
 Transcripción: ${transcript}`
       },
       energy: {
-        system: `Eres un analista de comportamiento y dinámicas de grupo. Analiza la energía, sentimiento y perfil de los participantes usando formato Markdown estructurado.`,
-        user: `Analiza la energía, sentimiento y perfil de los participantes en esta reunión usando este formato:
+        system: `Eres un analista de comportamiento y dinámicas de grupo especializado en análisis de energía, sentimiento y probabilidad de conversión comercial. Genera un dashboard completo con KPIs específicos usando formato Markdown estructurado.`,
+        user: `Analiza la energía, sentimiento y perfil de los participantes en esta reunión, incluyendo un dashboard con KPIs específicos y score de conversión usando este formato:
 
-## Análisis de Energía y Sentimiento
+## 📊 Dashboard de Energía y Conversión
 
-### Perfil de Participantes
+### 🎯 KPIs Principales
+
+| Métrica | Valor | Estado | Tendencia |
+|---------|-------|--------|-----------|
+| **Energía Promedio** | [X.X]/10 | [Alto/Medio/Bajo] | [↗️/➡️/↘️] |
+| **Sentimiento General** | [X]% Positivo | [Excelente/Bueno/Regular] | [↗️/➡️/↘️] |
+| **Engagement Promedio** | [X.X]/10 | [Alto/Medio/Bajo] | [↗️/➡️/↘️] |
+| **Score de Conversión** | [XX]% | [Alto/Medio/Bajo] | [↗️/➡️/↘️] |
+| **Urgencia Percibida** | [X.X]/10 | [Alta/Media/Baja] | [↗️/➡️/↘️] |
+| **Confianza en Solución** | [X.X]/10 | [Alta/Media/Baja] | [↗️/➡️/↘️] |
+
+### 🎯 Score de Conversión a Cliente
+
+#### Cálculo del Score (0-100%)
+- **Energía y Engagement**: [XX]% (peso 25%)
+- **Sentimiento y Confianza**: [XX]% (peso 25%)
+- **Urgencia y Necesidad**: [XX]% (peso 20%)
+- **Poder de Decisión**: [XX]% (peso 15%)
+- **Señales de Compromiso**: [XX]% (peso 15%)
+
+**Score Final**: **[XX]%** - **[Alto/Medio/Bajo] Riesgo de Conversión**
+
+### 👥 Análisis Individual de Participantes
 
 #### [Nombre del Participante]
-- **Rol**: [Rol en la reunión]
-- **Nivel de Energía**: Alto/Medio/Bajo (1-10)
-- **Sentimiento General**: Positivo/Neutral/Negativo
+- **Rol**: [Rol específico en la reunión]
+- **Energía Individual**: [X.X]/10 ([Alto/Medio/Bajo])
+- **Sentimiento**: [X]% Positivo ([Muy Positivo/Positivo/Neutral/Negativo])
+- **Engagement**: [X.X]/10 ([Muy Alto/Alto/Medio/Bajo])
 - **Estilo de Comunicación**: [Directo/Diplomático/Analítico/Expresivo]
-- **Nivel de Engagement**: Alto/Medio/Bajo
-- **Principales Preocupaciones**: [Lista de preocupaciones identificadas]
-- **Intereses Clave**: [Lista de intereses identificados]
+- **Poder de Decisión**: [Alto/Medio/Bajo] ([X.X]/10)
+- **Nivel de Apoyo**: [Alto/Medio/Bajo] ([X.X]/10)
+- **Riesgo de Objeción**: [Alto/Medio/Bajo] ([X.X]/10)
+- **Principales Preocupaciones**: [Lista específica]
+- **Intereses Clave**: [Lista específica]
+- **Señales de Compromiso**: [Positivas/Negativas/Neutrales]
 
 #### [Nombre del Participante]
-- **Rol**: [Rol en la reunión]
-- **Nivel de Energía**: Alto/Medio/Bajo (1-10)
-- **Sentimiento General**: Positivo/Neutral/Negativo
+- **Rol**: [Rol específico en la reunión]
+- **Energía Individual**: [X.X]/10 ([Alto/Medio/Bajo])
+- **Sentimiento**: [X]% Positivo ([Muy Positivo/Positivo/Neutral/Negativo])
+- **Engagement**: [X.X]/10 ([Muy Alto/Alto/Medio/Bajo])
 - **Estilo de Comunicación**: [Directo/Diplomático/Analítico/Expresivo]
-- **Nivel de Engagement**: Alto/Medio/Bajo
-- **Principales Preocupaciones**: [Lista de preocupaciones identificadas]
-- **Intereses Clave**: [Lista de intereses identificados]
+- **Poder de Decisión**: [Alto/Medio/Bajo] ([X.X]/10)
+- **Nivel de Apoyo**: [Alto/Medio/Bajo] ([X.X]/10)
+- **Riesgo de Objeción**: [Alto/Medio/Bajo] ([X.X]/10)
+- **Principales Preocupaciones**: [Lista específica]
+- **Intereses Clave**: [Lista específica]
+- **Señales de Compromiso**: [Positivas/Negativas/Neutrales]
 
-### Análisis de Dinámicas de Grupo
+### 🏢 Análisis de Dinámicas de Grupo
 
 #### Energía General de la Reunión
-- **Nivel Promedio**: [1-10]
-- **Momento de Mayor Energía**: [Descripción del momento]
-- **Momento de Menor Energía**: [Descripción del momento]
-- **Factores que Aumentaron la Energía**: [Lista de factores]
-- **Factores que Disminuyeron la Energía**: [Lista de factores]
+- **Nivel Promedio**: [X.X]/10 ([Alto/Medio/Bajo])
+- **Momento de Mayor Energía**: [Descripción específica con timestamp aproximado]
+- **Momento de Menor Energía**: [Descripción específica con timestamp aproximado]
+- **Factores que Aumentaron la Energía**: [Lista específica con ejemplos]
+- **Factores que Disminuyeron la Energía**: [Lista específica con ejemplos]
+- **Consistencia de Energía**: [Alta/Media/Baja] ([X.X]/10)
 
 #### Sentimiento General
-- **Sentimiento Promedio**: Positivo/Neutral/Negativo
-- **Confianza en la Solución**: Alta/Media/Baja
-- **Urgencia Percibida**: Alta/Media/Baja
-- **Resistencia al Cambio**: Alta/Media/Baja
+- **Sentimiento Promedio**: [X]% Positivo ([Muy Positivo/Positivo/Neutral/Negativo])
+- **Confianza en la Solución**: [X.X]/10 ([Alta/Media/Baja])
+- **Urgencia Percibida**: [X.X]/10 ([Alta/Media/Baja])
+- **Resistencia al Cambio**: [X.X]/10 ([Alta/Media/Baja])
+- **Apertura a Nuevas Ideas**: [X.X]/10 ([Alta/Media/Baja])
 
-### Mapa de Influencia
+### 🎯 Mapa de Influencia y Decisión
 
-| Participante | Influencia | Poder de Decisión | Nivel de Apoyo | Riesgo de Objeción |
-|--------------|------------|-------------------|----------------|-------------------|
-| [Nombre] | Alta/Media/Baja | Alto/Medio/Bajo | Alto/Medio/Bajo | Alto/Medio/Bajo |
-| [Nombre] | Alta/Media/Baja | Alto/Medio/Bajo | Alto/Medio/Bajo | Alto/Medio/Bajo |
+| Participante | Influencia | Poder Decisión | Nivel Apoyo | Riesgo Objeción | Score Individual |
+|--------------|------------|----------------|-------------|-----------------|------------------|
+| [Nombre] | [X.X]/10 | [X.X]/10 | [X.X]/10 | [X.X]/10 | [XX]% |
+| [Nombre] | [X.X]/10 | [X.X]/10 | [X.X]/10 | [X.X]/10 | [XX]% |
 
-### Insights de Comportamiento
+### 📈 Insights de Comportamiento
 
 #### Patrones Identificados
-- **Patrón 1**: [Descripción del patrón observado]
-- **Patrón 2**: [Descripción del patrón observado]
-- **Patrón 3**: [Descripción del patrón observado]
+- **Patrón 1**: [Descripción específica del patrón observado]
+- **Patrón 2**: [Descripción específica del patrón observado]
+- **Patrón 3**: [Descripción específica del patrón observado]
 
 #### Señales de Compromiso
-- **Señales Positivas**: [Lista de señales que indican interés]
-- **Señales de Preocupación**: [Lista de señales que indican resistencia]
-- **Señales de Urgencia**: [Lista de señales que indican necesidad inmediata]
+- **Señales Positivas**: [Lista específica con ejemplos de la transcripción]
+- **Señales de Preocupación**: [Lista específica con ejemplos de la transcripción]
+- **Señales de Urgencia**: [Lista específica con ejemplos de la transcripción]
 
-### Recomendaciones de Enfoque
+### 🎯 Recomendaciones Estratégicas
 
 #### Para el Próximo Contacto
-- **Enfoque Principal**: [Cómo abordar al participante clave]
-- **Canal Preferido**: [Canal de comunicación preferido]
-- **Momento Óptimo**: [Cuándo contactar]
-- **Mensaje Clave**: [Qué mensaje transmitir]
+- **Enfoque Principal**: [Estrategia específica basada en el análisis]
+- **Canal Preferido**: [Canal óptimo basado en el comportamiento observado]
+- **Momento Óptimo**: [Timing específico basado en urgencia y disponibilidad]
+- **Mensaje Clave**: [Mensaje personalizado basado en intereses y preocupaciones]
 
 #### Estrategia de Comunicación
-- **Tono Recomendado**: [Tono de comunicación sugerido]
-- **Enfoque de Valor**: [Cómo presentar el valor]
-- **Manejo de Objeciones**: [Estrategia para manejar resistencias]
+- **Tono Recomendado**: [Tono específico basado en el estilo de comunicación del grupo]
+- **Enfoque de Valor**: [Cómo presentar el valor basado en las necesidades identificadas]
+- **Manejo de Objeciones**: [Estrategia específica para las objeciones identificadas]
+
+### ⚠️ Alertas y Acciones Críticas
+
+#### Alertas de Riesgo
+- **Riesgo Alto**: [Descripción de riesgos críticos identificados]
+- **Riesgo Medio**: [Descripción de riesgos moderados identificados]
+- **Oportunidades**: [Descripción de oportunidades inmediatas]
+
+#### Acciones Inmediatas
+1. **[Acción 1]**: [Descripción específica con responsable y timeline]
+2. **[Acción 2]**: [Descripción específica con responsable y timeline]
+3. **[Acción 3]**: [Descripción específica con responsable y timeline]
 
 Transcripción: ${transcript}`
       }

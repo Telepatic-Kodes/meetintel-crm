@@ -139,9 +139,9 @@ ${cleanContent(sections.followup.content, 'follow-up plan')}
 
 ---
 
-## ⚡ ANÁLISIS DE ENERGÍA Y SENTIMIENTO
+## ⚡ DASHBOARD DE ENERGÍA Y CONVERSIÓN
 
-${cleanContent(sections.energy.content, 'análisis de energía')}
+${cleanContent(sections.energy.content, 'dashboard de energía')}
 
 ---
 
@@ -647,7 +647,7 @@ ${cleanContent(sections.energy.content, 'análisis de energía')}
                   { label: "ROI Analysis", status: "pending" },
                   { label: "Strategic Insights", status: "pending" },
                   { label: "Follow-up Plan", status: "pending" },
-                  { label: "Energy Analysis", status: "pending" }
+                  { label: "Energy Dashboard", status: "pending" }
                 ].map((item, index) => (
                   <div key={item.label} className="flex flex-col items-center gap-2">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -917,7 +917,7 @@ ${cleanContent(sections.energy.content, 'análisis de energía')}
                         { key: 'roi', label: 'ROI Analysis' },
                         { key: 'insights', label: 'Strategic Insights' },
                         { key: 'followup', label: 'Follow-up Plan' },
-                        { key: 'energy', label: '⚡ Energy Analysis' },
+                        { key: 'energy', label: '⚡ Energy Dashboard' },
                         { key: 'consolidated', label: '📊 Reporte Consolidado' }
                       ].map((tab) => {
                         const section = analysisSections[tab.key as keyof AnalysisSections];
@@ -971,7 +971,7 @@ ${cleanContent(sections.energy.content, 'análisis de energía')}
                                         activeTab === 'roi' ? 'ROI Analysis' :
                                         activeTab === 'insights' ? 'Strategic Insights' :
                                         activeTab === 'followup' ? 'Follow-up Plan' :
-                                        activeTab === 'energy' ? 'Energy Analysis' :
+                                        activeTab === 'energy' ? 'Energy Dashboard' :
                                         'Reporte Consolidado'}...
                             </h3>
                             <p className="text-slate-600">Aplicando metodología McKinsey con IA avanzada</p>
@@ -1036,7 +1036,7 @@ ${cleanContent(sections.energy.content, 'análisis de energía')}
                                  activeTab === 'roi' ? 'ROI Analysis' :
                                  activeTab === 'insights' ? 'Strategic Insights' :
                                  activeTab === 'followup' ? 'Follow-up Plan' :
-                                 activeTab === 'energy' ? '⚡ Energy Analysis' :
+                                 activeTab === 'energy' ? '⚡ Energy Dashboard' :
                                  '📊 Reporte Consolidado'}
                               </h2>
                               <p className="text-slate-600 mt-1">
@@ -1045,7 +1045,7 @@ ${cleanContent(sections.energy.content, 'análisis de energía')}
                                  activeTab === 'roi' ? 'Análisis de Retorno de Inversión' :
                                  activeTab === 'insights' ? 'Insights estratégicos y recomendaciones' :
                                  activeTab === 'followup' ? 'Plan de seguimiento y próximos pasos' :
-                                 activeTab === 'energy' ? 'Análisis de energía, sentimiento y perfil de participantes' :
+                                 activeTab === 'energy' ? 'Dashboard con KPIs de energía, sentimiento y score de conversión' :
                                  'Vista consolidada con todas las métricas y tablas'}
                               </p>
                             </div>
