@@ -64,352 +64,153 @@ export default function Page() {
       day: 'numeric'
     });
 
+    // Helper function to clean content and remove duplicate titles
+    const cleanContent = (content: string, sectionTitle: string) => {
+      if (!content) return '*No disponible - Ejecute el análisis correspondiente primero*';
+      
+      // Remove the main title if it exists to avoid duplication
+      const lines = content.split('\n');
+      const filteredLines = lines.filter(line => {
+        // Remove lines that are just the section title
+        const cleanLine = line.replace(/^#+\s*/, '').trim();
+        return !cleanLine.toLowerCase().includes(sectionTitle.toLowerCase());
+      });
+      
+      return filteredLines.join('\n').trim();
+    };
+
     return `# 📊 REPORTE CONSOLIDADO - ANÁLISIS ESTRATÉGICO
 
-<div class="mckinsey-header">
-  <div class="mckinsey-metric">
-    <strong>📅 Fecha de Generación:</strong> ${currentDate}
-  </div>
-  <div class="mckinsey-metric">
-    <strong>🏢 Cliente:</strong> Empresa ABC
-  </div>
-  <div class="mckinsey-metric">
-    <strong>📋 Tipo de Reunión:</strong> Prospecto
-  </div>
-  <div class="mckinsey-metric">
-    <strong>🤖 Analista:</strong> MeetingIntel Agent
-  </div>
-</div>
+## 📋 Información del Reporte
+
+**📅 Fecha de Generación:** ${currentDate}  
+**🏢 Cliente:** Empresa ABC  
+**📋 Tipo de Reunión:** Prospecto  
+**🤖 Analista:** MeetingIntel Agent  
 
 ---
 
 ## 📋 RESUMEN EJECUTIVO
 
-${sections.overview.content || '*No disponible - Ejecute el análisis de Resumen Ejecutivo primero*'}
+${cleanContent(sections.overview.content, 'resumen ejecutivo')}
 
 ---
 
 ## 🎯 ANÁLISIS ICE SCORING
 
-${sections.ice.content || '*No disponible - Ejecute el análisis de ICE Scoring primero*'}
+${cleanContent(sections.ice.content, 'ice scoring')}
 
 ---
 
 ## 💰 ANÁLISIS ROI
 
-${sections.roi.content || '*No disponible - Ejecute el análisis de ROI primero*'}
+${cleanContent(sections.roi.content, 'roi analysis')}
 
 ---
 
 ## 🔍 INSIGHTS ESTRATÉGICOS
 
-${sections.insights.content || '*No disponible - Ejecute el análisis de Strategic Insights primero*'}
+${cleanContent(sections.insights.content, 'strategic insights')}
 
 ---
 
 ## 📅 PLAN DE SEGUIMIENTO
 
-${sections.followup.content ? sections.followup.content.replace(/```markdown\n/g, '').replace(/```\n/g, '') : '*No disponible - Ejecute el análisis de Follow-up Plan primero*'}
+${cleanContent(sections.followup.content, 'follow-up plan')}
 
 ---
 
 ## 📊 DASHBOARD CONSOLIDADO DE MÉTRICAS
 
-<div class="mckinsey-chart">
-  <h3>📈 Métricas Clave del Proyecto</h3>
-  <table class="analysis-table">
-    <thead>
-      <tr>
-        <th>Métrica</th>
-        <th>Valor</th>
-        <th>Estado</th>
-        <th>Prioridad</th>
-        <th>Fecha Límite</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>Inversión Total</strong></td>
-        <td>$30,000,000 CLP ($36,000 USD)</td>
-        <td><span class="status-pending">Pendiente</span></td>
-        <td><span class="priority-high">Alta</span></td>
-        <td>30/01/2025</td>
-      </tr>
-      <tr>
-        <td><strong>ROI Promedio</strong></td>
-        <td>136.67%</td>
-        <td><span class="status-calculated">Calculado</span></td>
-        <td><span class="priority-high">Alta</span></td>
-        <td>-</td>
-      </tr>
-      <tr>
-        <td><strong>Payback Promedio</strong></td>
-        <td>7.83 meses</td>
-        <td><span class="status-calculated">Calculado</span></td>
-        <td><span class="priority-high">Alta</span></td>
-        <td>-</td>
-      </tr>
-      <tr>
-        <td><strong>Demo Técnico</strong></td>
-        <td>Agendado</td>
-        <td><span class="status-pending">Pendiente</span></td>
-        <td><span class="priority-high">Alta</span></td>
-        <td>15/01/2025</td>
-      </tr>
-      <tr>
-        <td><strong>Propuesta Formal</strong></td>
-        <td>En preparación</td>
-        <td><span class="status-pending">Pendiente</span></td>
-        <td><span class="priority-high">Alta</span></td>
-        <td>20/01/2025</td>
-      </tr>
-      <tr>
-        <td><strong>Decisión Final</strong></td>
-        <td>En evaluación</td>
-        <td><span class="status-pending">Pendiente</span></td>
-        <td><span class="priority-high">Alta</span></td>
-        <td>30/01/2025</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+### 📈 Métricas Clave del Proyecto
+
+| Métrica | Valor | Estado | Prioridad | Fecha Límite |
+|---------|-------|--------|-----------|--------------|
+| **Inversión Total** | $30,000,000 CLP ($36,000 USD) | Pendiente | Alta | 30/01/2025 |
+| **ROI Promedio** | 136.67% | Calculado | Alta | - |
+| **Payback Promedio** | 7.83 meses | Calculado | Alta | - |
+| **Demo Técnico** | Agendado | Pendiente | Alta | 15/01/2025 |
+| **Propuesta Formal** | En preparación | Pendiente | Alta | 20/01/2025 |
+| **Decisión Final** | En evaluación | Pendiente | Alta | 30/01/2025 |
 
 ---
 
 ## 🎯 MATRIZ DE PRIORIZACIÓN ICE
 
-<div class="mckinsey-chart">
-  <h3>📊 Iniciativas Priorizadas por ICE Score</h3>
-  <table class="analysis-table">
-    <thead>
-      <tr>
-        <th>Iniciativa</th>
-        <th>ICE Score</th>
-        <th>Impact</th>
-        <th>Confidence</th>
-        <th>Ease</th>
-        <th>Prioridad</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Automatización de procesos</td>
-        <td><strong>5.04</strong></td>
-        <td>9</td>
-        <td>8</td>
-        <td>7</td>
-        <td><span class="priority-high">Alta</span></td>
-      </tr>
-      <tr>
-        <td>Implementación en 3 meses</td>
-        <td><strong>5.04</strong></td>
-        <td>7</td>
-        <td>9</td>
-        <td>8</td>
-        <td><span class="priority-high">Alta</span></td>
-      </tr>
-      <tr>
-        <td>Propuesta formal</td>
-        <td><strong>4.32</strong></td>
-        <td>6</td>
-        <td>8</td>
-        <td>9</td>
-        <td><span class="priority-high">Alta</span></td>
-      </tr>
-      <tr>
-        <td>Demo técnico</td>
-        <td><strong>4.00</strong></td>
-        <td>5</td>
-        <td>8</td>
-        <td>9</td>
-        <td><span class="priority-medium">Media</span></td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+### 📊 Iniciativas Priorizadas por ICE Score
+
+| Iniciativa | ICE Score | Impact | Confidence | Ease | Prioridad |
+|------------|-----------|--------|------------|------|-----------|
+| Automatización de procesos | **5.04** | 9 | 8 | 7 | Alta |
+| Implementación en 3 meses | **5.04** | 7 | 9 | 8 | Alta |
+| Propuesta formal | **4.32** | 6 | 8 | 9 | Alta |
+| Demo técnico | **4.00** | 5 | 8 | 9 | Media |
 
 ---
 
 ## 💼 MATRIZ DE OPORTUNIDADES ROI
 
-<div class="mckinsey-chart">
-  <h3>💰 Análisis de Retorno de Inversión</h3>
-  <table class="analysis-table">
-    <thead>
-      <tr>
-        <th>Oportunidad</th>
-        <th>Inversión (CLP)</th>
-        <th>Beneficios Anuales</th>
-        <th>ROI</th>
-        <th>Payback</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>Automatización Integral</strong></td>
-        <td>$15,000,000</td>
-        <td>$45,000,000</td>
-        <td><span class="roi-excellent">300%</span></td>
-        <td>8 meses</td>
-      </tr>
-      <tr>
-        <td><strong>Optimización Procesos</strong></td>
-        <td>$5,000,000</td>
-        <td>$8,000,000</td>
-        <td><span class="roi-good">60%</span></td>
-        <td>7.5 meses</td>
-      </tr>
-      <tr>
-        <td><strong>Facturación</strong></td>
-        <td>$10,000,000</td>
-        <td>$15,000,000</td>
-        <td><span class="roi-good">50%</span></td>
-        <td>8 meses</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+### 💰 Análisis de Retorno de Inversión
+
+| Oportunidad | Inversión (CLP) | Beneficios Anuales | ROI | Payback |
+|-------------|-----------------|-------------------|-----|---------|
+| **Automatización Integral** | $15,000,000 | $45,000,000 | **300%** | 8 meses |
+| **Optimización Procesos** | $5,000,000 | $8,000,000 | **60%** | 7.5 meses |
+| **Facturación** | $10,000,000 | $15,000,000 | **50%** | 8 meses |
 
 ---
 
 ## 📈 TIMELINE DE SEGUIMIENTO
 
-<div class="mckinsey-chart">
-  <h3>🗓️ Cronograma de Acciones</h3>
-  <table class="analysis-table">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Acción</th>
-        <th>Responsable</th>
-        <th>Estado</th>
-        <th>CTA</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>15/01/2025</strong></td>
-        <td>Demo técnico</td>
-        <td>Carlos López</td>
-        <td><span class="status-pending">Pendiente</span></td>
-        <td>Evaluación técnica</td>
-      </tr>
-      <tr>
-        <td><strong>20/01/2025</strong></td>
-        <td>Propuesta formal</td>
-        <td>Carlos López</td>
-        <td><span class="status-pending">Pendiente</span></td>
-        <td>Revisión y feedback</td>
-      </tr>
-      <tr>
-        <td><strong>30/01/2025</strong></td>
-        <td>Decisión final</td>
-        <td>Juan Pérez, María González</td>
-        <td><span class="status-pending">Pendiente</span></td>
-        <td>Aprobación</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+### 🗓️ Cronograma de Acciones
+
+| Fecha | Acción | Responsable | Estado | CTA |
+|-------|--------|-------------|--------|-----|
+| **15/01/2025** | Demo técnico | Carlos López | Pendiente | Evaluación técnica |
+| **20/01/2025** | Propuesta formal | Carlos López | Pendiente | Revisión y feedback |
+| **30/01/2025** | Decisión final | Juan Pérez, María González | Pendiente | Aprobación |
 
 ---
 
 ## ⚠️ MATRIZ DE RIESGOS
 
-<div class="mckinsey-chart">
-  <h3>🚨 Análisis de Riesgos y Mitigaciones</h3>
-  <table class="analysis-table">
-    <thead>
-      <tr>
-        <th>Riesgo</th>
-        <th>Probabilidad</th>
-        <th>Impacto</th>
-        <th>Mitigación</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Retrasos implementación</td>
-        <td><span class="risk-medium">Media</span></td>
-        <td><span class="impact-high">Alto</span></td>
-        <td>Planificación detallada</td>
-      </tr>
-      <tr>
-        <td>Objeciones precio</td>
-        <td><span class="risk-high">Alta</span></td>
-        <td><span class="impact-high">Alto</span></td>
-        <td>ROI calculator, casos éxito</td>
-      </tr>
-      <tr>
-        <td>Competencia</td>
-        <td><span class="risk-medium">Media</span></td>
-        <td><span class="impact-medium">Medio</span></td>
-        <td>Diferenciación, valor único</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+### 🚨 Análisis de Riesgos y Mitigaciones
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|--------|--------------|---------|------------|
+| Retrasos implementación | Media | Alto | Planificación detallada |
+| Objeciones precio | Alta | Alto | ROI calculator, casos éxito |
+| Competencia | Media | Medio | Diferenciación, valor único |
 
 ---
 
 ## 📋 CHECKLIST DE ACCIONES
 
-<div class="mckinsey-insight">
-  <h3>✅ Plan de Acción Inmediato</h3>
-  <ul>
-    <li><strong>Inmediato:</strong> Enviar resumen de reunión</li>
-    <li><strong>1 día:</strong> Preparar demo personalizado</li>
-    <li><strong>3 días:</strong> Llamada de seguimiento</li>
-    <li><strong>1 semana:</strong> Demo técnico</li>
-    <li><strong>2 semanas:</strong> Propuesta formal</li>
-    <li><strong>1 mes:</strong> Decisión final</li>
-  </ul>
-</div>
+### ✅ Plan de Acción Inmediato
+
+- **Inmediato:** Enviar resumen de reunión
+- **1 día:** Preparar demo personalizado
+- **3 días:** Llamada de seguimiento
+- **1 semana:** Demo técnico
+- **2 semanas:** Propuesta formal
+- **1 mes:** Decisión final
 
 ---
 
 ## 📞 CONTACTOS CLAVE
 
-<div class="mckinsey-chart">
-  <h3>👥 Stakeholders del Proyecto</h3>
-  <table class="analysis-table">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Rol</th>
-        <th>Responsabilidad</th>
-        <th>Contacto</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>Juan Pérez</strong></td>
-        <td>CEO</td>
-        <td>Toma de decisiones</td>
-        <td>[Email/Teléfono]</td>
-      </tr>
-      <tr>
-        <td><strong>María González</strong></td>
-        <td>CTO</td>
-        <td>Evaluación técnica</td>
-        <td>[Email/Teléfono]</td>
-      </tr>
-      <tr>
-        <td><strong>Carlos López</strong></td>
-        <td>Consultor</td>
-        <td>Gestión proyecto</td>
-        <td>[Email/Teléfono]</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+### 👥 Stakeholders del Proyecto
+
+| Nombre | Rol | Responsabilidad | Contacto |
+|--------|-----|-----------------|----------|
+| **Juan Pérez** | CEO | Toma de decisiones | [Email/Teléfono] |
+| **María González** | CTO | Evaluación técnica | [Email/Teléfono] |
+| **Carlos López** | Consultor | Gestión proyecto | [Email/Teléfono] |
 
 ---
 
-<div class="mckinsey-footer">
-  <p><em>📊 Reporte generado automáticamente por MeetingIntel Agent</em></p>
-  <p><em>🏛️ Metodología McKinsey integrada con IA de última generación</em></p>
-</div>`;
+*📊 Reporte generado automáticamente por MeetingIntel Agent*  
+*🏛️ Metodología McKinsey integrada con IA de última generación*`;
   }, [analysisSections]);
 
   const analyzeSection = useCallback(async (section: keyof AnalysisSections) => {
