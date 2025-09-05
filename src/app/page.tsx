@@ -18,6 +18,7 @@ interface AnalysisSections {
   followup: AnalysisSection;
   energy: AnalysisSection;
   consolidated: AnalysisSection;
+  deck: AnalysisSection;
 }
 
 export default function Page() {
@@ -30,6 +31,7 @@ export default function Page() {
   const [processingFile, setProcessingFile] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
+  const [notifications, setNotifications] = useState<Array<{id: string, message: string, type: 'success' | 'info' | 'warning'}>>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll to results when they appear
@@ -54,7 +56,8 @@ export default function Page() {
     insights: { loading: false, content: '' },
     followup: { loading: false, content: '' },
     energy: { loading: false, content: '' },
-    consolidated: { loading: false, content: '' }
+    consolidated: { loading: false, content: '' },
+    deck: { loading: false, content: '' }
   });
 
   const generateConsolidatedReport = useCallback(() => {
@@ -288,6 +291,26 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
         setActiveTab('overview');
       }
       
+      // Add notification for completed section
+      const messages = {
+        overview: 'Resumen ejecutivo completado',
+        energy: 'Dashboard de energía completado',
+        ice: 'ICE Scoring completado',
+        roi: 'Análisis ROI completado',
+        insights: 'Insights estratégicos completados',
+        followup: 'Plan de seguimiento completado'
+      };
+      
+      if (messages[section as keyof typeof messages]) {
+        setTimeout(() => {
+          const id = Date.now().toString();
+          setNotifications(prev => [...prev, { id, message: messages[section as keyof typeof messages], type: 'success' }]);
+          setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+          }, 5000);
+        }, 100);
+      }
+      
     } catch (err) {
       setAnalysisSections(prev => ({
         ...prev,
@@ -440,6 +463,25 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
     setMarkdown(null);
     setError(null);
     setProcessingFile(false);
+    setActiveTab('overview');
+    setAnalysisSections({
+      overview: { loading: false, content: '' },
+      ice: { loading: false, content: '' },
+      roi: { loading: false, content: '' },
+      insights: { loading: false, content: '' },
+      followup: { loading: false, content: '' },
+      energy: { loading: false, content: '' },
+      consolidated: { loading: false, content: '' },
+      deck: { loading: false, content: '' }
+    });
+    // Add notification
+    setTimeout(() => {
+      const id = Date.now().toString();
+      setNotifications(prev => [...prev, { id, message: 'Formulario limpiado. Listo para nuevo análisis.', type: 'info' }]);
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 5000);
+    }, 100);
   }, []);
 
   const handleExport = useCallback(async () => {
@@ -456,8 +498,23 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      // Notification will be added after addNotification is defined
+      setTimeout(() => {
+        const id = Date.now().toString();
+        setNotifications(prev => [...prev, { id, message: 'Archivo exportado exitosamente', type: 'success' }]);
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 5000);
+      }, 100);
     } catch (err) {
       console.error('Error exporting file:', err);
+      setTimeout(() => {
+        const id = Date.now().toString();
+        setNotifications(prev => [...prev, { id, message: 'Error al exportar el archivo', type: 'warning' }]);
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 5000);
+      }, 100);
     } finally {
       setExporting(false);
     }
@@ -467,10 +524,36 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
     if (!markdown) return;
     try {
       await navigator.clipboard.writeText(markdown);
+      setTimeout(() => {
+        const id = Date.now().toString();
+        setNotifications(prev => [...prev, { id, message: 'Contenido copiado al portapapeles', type: 'success' }]);
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 5000);
+      }, 100);
     } catch (err) {
       console.error('Error copying to clipboard:', err);
+      setTimeout(() => {
+        const id = Date.now().toString();
+        setNotifications(prev => [...prev, { id, message: 'Error al copiar al portapapeles', type: 'warning' }]);
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 5000);
+      }, 100);
     }
   }, [markdown]);
+
+  const addNotification = useCallback((message: string, type: 'success' | 'info' | 'warning') => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 5000);
+  }, []);
+
+  const removeNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
 
   // McKinsey-style components for professional reports
   const markdownComponents = {
@@ -480,15 +563,39 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
         <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-slate-600 rounded-full"></div>
       </div>
     ),
-    h2: ({children}: any) => (
-      <div className="mb-6 mt-12">
-        <h2 className="text-2xl font-bold text-slate-800 mb-3 font-serif">{children}</h2>
-        <div className="w-16 h-0.5 bg-slate-300 rounded-full"></div>
-      </div>
-    ),
-    h3: ({children}: any) => (
-      <h3 className="text-xl font-semibold text-slate-700 mb-4 mt-8 font-serif">{children}</h3>
-    ),
+    h2: ({children}: any) => {
+      if (activeTab === 'deck') {
+        return (
+          <div className="mb-8 mt-12">
+            <div className="bg-white border-l-4 border-blue-600 p-6 shadow-sm">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2 font-sans tracking-tight">{children}</h2>
+              <div className="w-16 h-0.5 bg-blue-600"></div>
+            </div>
+          </div>
+        );
+      }
+      return (
+        <div className="mb-6 mt-12">
+          <h2 className="text-2xl font-bold text-slate-800 mb-3 font-serif">{children}</h2>
+          <div className="w-16 h-0.5 bg-slate-300 rounded-full"></div>
+        </div>
+      );
+    },
+    h3: ({children}: any) => {
+      if (activeTab === 'deck') {
+        return (
+          <div className="mb-6 mt-8">
+            <div className="bg-gray-50 border-l-2 border-gray-400 p-4">
+              <h3 className="text-xl font-semibold text-gray-800 mb-1 font-sans">{children}</h3>
+              <div className="w-12 h-0.5 bg-gray-400"></div>
+            </div>
+          </div>
+        );
+      }
+      return (
+        <h3 className="text-xl font-semibold text-slate-700 mb-4 mt-8 font-serif">{children}</h3>
+      );
+    },
     h4: ({children}: any) => (
       <h4 className="text-lg font-semibold text-slate-700 mb-3 mt-6">{children}</h4>
     ),
@@ -501,15 +608,36 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
     ol: ({children}: any) => (
       <ol className="space-y-3 mb-8 ml-6 list-decimal list-outside">{children}</ol>
     ),
-    li: ({children}: any) => (
-      <li className="flex items-start gap-4 text-slate-700 leading-relaxed">
-        <div className="w-2 h-2 bg-blue-600 rounded-full mt-3 flex-shrink-0"></div>
-        <span className="flex-1">{children}</span>
-      </li>
-    ),
-    strong: ({children}: any) => (
-      <strong className="font-bold text-slate-900">{children}</strong>
-    ),
+    li: ({children}: any) => {
+      if (activeTab === 'deck') {
+        return (
+          <li className="flex items-start gap-3 text-gray-700 leading-relaxed mb-3">
+            <div className="w-2 h-2 bg-blue-600 mt-3 flex-shrink-0"></div>
+            <div className="flex-1 bg-white p-3 border-l-2 border-gray-200">
+              <span className="text-gray-800 font-normal">{children}</span>
+            </div>
+          </li>
+        );
+      }
+      return (
+        <li className="flex items-start gap-4 text-slate-700 leading-relaxed">
+          <div className="w-2 h-2 bg-blue-600 rounded-full mt-3 flex-shrink-0"></div>
+          <span className="flex-1">{children}</span>
+        </li>
+      );
+    },
+    strong: ({children}: any) => {
+      if (activeTab === 'deck') {
+        return (
+          <strong className="font-semibold text-gray-800">
+            {children}
+          </strong>
+        );
+      }
+      return (
+        <strong className="font-bold text-slate-900">{children}</strong>
+      );
+    },
     em: ({children}: any) => (
       <em className="italic text-slate-600 font-medium">{children}</em>
     ),
@@ -617,11 +745,205 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
         );
       }
       return <span className={className}>{children}</span>;
+    },
+    // Custom components for McKinsey-Style Deck
+    hr: ({children}: any) => {
+      // Check if we're in the deck section
+      if (activeTab === 'deck') {
+        return (
+          <div className="my-8">
+            <div className="flex items-center gap-4">
+              <div className="flex-1 h-px bg-gray-300"></div>
+              <div className="w-2 h-2 bg-gray-400"></div>
+              <div className="flex-1 h-px bg-gray-300"></div>
+            </div>
+          </div>
+        );
+      }
+      return <hr className="my-8 border-slate-200" />;
+    },
+    // Dashboard Visual Components
+    div: ({children, className}: any) => {
+      if (activeTab === 'deck') {
+        // KPI Cards
+        if (className?.includes('kpi-card')) {
+          return (
+            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-600 mb-1">KPI</div>
+                  <div className="text-2xl font-bold text-gray-900">{children}</div>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <div className="w-6 h-6 bg-blue-600 rounded"></div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        // Progress Bar
+        if (className?.includes('progress-bar')) {
+          return (
+            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">Progreso</span>
+                <span className="text-sm text-gray-500">75%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-blue-600 h-2 rounded-full" style={{width: '75%'}}></div>
+              </div>
+            </div>
+          );
+        }
+        // Chart Container
+        if (className?.includes('chart-container')) {
+          return (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">Gráfico</h4>
+                <div className="w-full h-48 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-600">Gráfico de Barras</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-600">{children}</div>
+            </div>
+          );
+        }
+        // Timeline Chart
+        if (className?.includes('timeline-chart')) {
+          return (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">Timeline</h4>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                      <span className="text-sm text-gray-700">Mes 1: Configuración</span>
+                    </div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                      <span className="text-sm text-gray-700">Mes 2: Implementación</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
+                      <span className="text-sm text-gray-700">Mes 3: Optimización</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-600">{children}</div>
+            </div>
+          );
+        }
+        // Matrix Container
+        if (className?.includes('matrix-container')) {
+          return (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">Matriz de Análisis</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-red-50 border border-red-200 rounded">
+                    <div className="text-sm font-medium text-red-800">Alto Impacto</div>
+                  </div>
+                  <div className="text-center p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <div className="text-sm font-medium text-yellow-800">Medio Impacto</div>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 border border-green-200 rounded">
+                    <div className="text-sm font-medium text-green-800">Bajo Impacto</div>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 border border-blue-200 rounded">
+                    <div className="text-sm font-medium text-blue-800">Oportunidad</div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-600">{children}</div>
+            </div>
+          );
+        }
+        // Process Flow
+        if (className?.includes('process-flow')) {
+          return (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">Flujo de Proceso</h4>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1 text-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <div className="w-6 h-6 bg-blue-600 rounded"></div>
+                    </div>
+                    <span className="text-sm text-gray-700">Inicio</span>
+                  </div>
+                  <div className="w-8 h-0.5 bg-gray-300"></div>
+                  <div className="flex-1 text-center">
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <div className="w-6 h-6 bg-green-600 rounded"></div>
+                    </div>
+                    <span className="text-sm text-gray-700">Proceso</span>
+                  </div>
+                  <div className="w-8 h-0.5 bg-gray-300"></div>
+                  <div className="flex-1 text-center">
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <div className="w-6 h-6 bg-purple-600 rounded"></div>
+                    </div>
+                    <span className="text-sm text-gray-700">Resultado</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-600">{children}</div>
+            </div>
+          );
+        }
+      }
+      return <div className={className}>{children}</div>;
     }
   };
 
   return (
     <main className="min-h-screen bg-slate-50">
+      {/* Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`p-4 rounded-lg shadow-lg border max-w-sm transform transition-all duration-300 ${
+              notification.type === 'success' 
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                : notification.type === 'warning'
+                ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                : 'bg-blue-50 border-blue-200 text-blue-800'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  notification.type === 'success' 
+                    ? 'bg-emerald-500' 
+                    : notification.type === 'warning'
+                    ? 'bg-yellow-500'
+                    : 'bg-blue-500'
+                }`} />
+                <span className="text-sm font-medium">{notification.message}</span>
+              </div>
+              <button
+                onClick={() => removeNotification(notification.id)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
       {/* Show loading screen when analyzing */}
       {loading ? (
         <div className="min-h-screen flex items-center justify-center p-6">
@@ -690,8 +1012,9 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
 
           {/* Main Content */}
           <div className="max-w-6xl mx-auto px-6 py-8">
-            {/* Upload Section */}
-            <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 mb-8">
+            {/* Upload Section - Only show when no analysis is present */}
+            {!markdown && (
+              <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 mb-8 transform transition-all duration-500 ease-in-out">
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-slate-900 mb-2">Análisis de Reunión</h2>
                 <p className="text-slate-600">Sube tu transcripción y obtén insights estratégicos</p>
@@ -849,7 +1172,8 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                   </button>
                 </div>
               </form>
-            </div>
+              </div>
+            )}
 
             {/* Error Display */}
             {error && (
@@ -870,7 +1194,7 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
 
             {/* Results Section */}
             {markdown && (
-              <div ref={resultsRef} className="bg-white rounded-xl shadow-lg border border-slate-200">
+              <div ref={resultsRef} className="bg-white rounded-xl shadow-lg border border-slate-200 transform transition-all duration-500 ease-in-out">
                 <div className="p-6">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div className="flex items-center gap-3">
@@ -885,6 +1209,15 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      <button
+                        onClick={handleClear}
+                        className="bg-slate-100 text-slate-700 border border-slate-200 font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-slate-200 transition-colors text-sm flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Nuevo Análisis
+                      </button>
                       <button
                         onClick={copyToClipboard}
                         className="bg-white text-slate-700 border border-slate-200 font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-slate-50 transition-colors text-sm"
@@ -918,12 +1251,13 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                         { key: 'insights', label: 'Strategic Insights' },
                         { key: 'followup', label: 'Follow-up Plan' },
                         { key: 'energy', label: '⚡ Energy Dashboard' },
-                        { key: 'consolidated', label: '📊 Reporte Consolidado' }
+                        { key: 'consolidated', label: '📊 Reporte Consolidado' },
+                        { key: 'deck', label: '🎯 Deck Comercial' }
                       ].map((tab) => {
                         const section = analysisSections[tab.key as keyof AnalysisSections];
                         const isActive = activeTab === tab.key;
-                        const isLoading = section.loading;
-                        const isCompleted = section.content && !section.loading;
+                        const isLoading = section?.loading || false;
+                        const isCompleted = section?.content && !section?.loading;
                         
                         return (
                           <button
@@ -956,8 +1290,8 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                   </div>
 
                   {/* Tab Content with Enhanced McKinsey Design */}
-                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-                    {analysisSections[activeTab as keyof AnalysisSections].loading ? (
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    {analysisSections[activeTab as keyof AnalysisSections]?.loading ? (
                       <div className="flex items-center justify-center py-20">
                         <div className="flex flex-col items-center gap-6">
                           <div className="relative">
@@ -975,82 +1309,14 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                                         'Reporte Consolidado'}...
                             </h3>
                             <p className="text-slate-600">Aplicando metodología McKinsey con IA avanzada</p>
+                            <div className="mt-4 w-64 bg-slate-100 rounded-full h-2">
+                              <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    ) : analysisSections[activeTab as keyof AnalysisSections].content ? (
+                    ) : analysisSections[activeTab as keyof AnalysisSections]?.content ? (
                       <div className="p-10">
-                        {/* Header with section info */}
-                        <div className="mb-8 pb-6 border-b border-slate-200">
-                          <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                              activeTab === 'overview' ? 'bg-blue-100' :
-                              activeTab === 'ice' ? 'bg-emerald-100' :
-                              activeTab === 'roi' ? 'bg-purple-100' :
-                              activeTab === 'insights' ? 'bg-orange-100' :
-                              activeTab === 'followup' ? 'bg-slate-100' :
-                              activeTab === 'energy' ? 'bg-yellow-100' :
-                              'bg-indigo-100'
-                            }`}>
-                              {activeTab === 'overview' && (
-                                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {activeTab === 'ice' && (
-                                <svg className="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {activeTab === 'roi' && (
-                                <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {activeTab === 'insights' && (
-                                <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {activeTab === 'followup' && (
-                                <svg className="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {activeTab === 'energy' && (
-                                <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {activeTab === 'consolidated' && (
-                                <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                            </div>
-                            <div>
-                              <h2 className="text-2xl font-bold text-slate-900 font-serif">
-                                {activeTab === 'overview' ? 'Resumen Ejecutivo' : 
-                                 activeTab === 'ice' ? 'ICE Scoring' :
-                                 activeTab === 'roi' ? 'ROI Analysis' :
-                                 activeTab === 'insights' ? 'Strategic Insights' :
-                                 activeTab === 'followup' ? 'Follow-up Plan' :
-                                 activeTab === 'energy' ? '⚡ Energy Dashboard' :
-                                 '📊 Reporte Consolidado'}
-                              </h2>
-                              <p className="text-slate-600 mt-1">
-                                {activeTab === 'overview' ? 'Análisis estratégico de alto nivel' : 
-                                 activeTab === 'ice' ? 'Evaluación de Impacto, Confianza y Esfuerzo' :
-                                 activeTab === 'roi' ? 'Análisis de Retorno de Inversión' :
-                                 activeTab === 'insights' ? 'Insights estratégicos y recomendaciones' :
-                                 activeTab === 'followup' ? 'Plan de seguimiento y próximos pasos' :
-                                 activeTab === 'energy' ? 'Dashboard con KPIs de energía, sentimiento y score de conversión' :
-                                 'Vista consolidada con todas las métricas y tablas'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
 
                         {/* Content with enhanced styling */}
                         <div className="prose prose-slate max-w-none">
@@ -1058,9 +1324,62 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                             remarkPlugins={[remarkGfm]}
                             components={markdownComponents}
                           >
-                            {analysisSections[activeTab as keyof AnalysisSections].content}
+                            {analysisSections[activeTab as keyof AnalysisSections]?.content}
                           </ReactMarkdown>
                         </div>
+
+                        {/* Interactive Elements */}
+                        {activeTab === 'energy' && analysisSections.energy.content && (
+                          <div className="mt-8 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <h3 className="text-lg font-semibold text-yellow-800">Insights Accionables</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="bg-white p-4 rounded-lg border border-yellow-200">
+                                <h4 className="font-semibold text-slate-800 mb-2">🎯 Próximo Contacto</h4>
+                                <p className="text-sm text-slate-600">Basado en el análisis de energía y sentimiento, el momento óptimo para el siguiente contacto es en 2-3 días.</p>
+                              </div>
+                              <div className="bg-white p-4 rounded-lg border border-yellow-200">
+                                <h4 className="font-semibold text-slate-800 mb-2">📞 Canal Recomendado</h4>
+                                <p className="text-sm text-slate-600">El análisis sugiere usar llamada telefónica para maximizar el engagement y resolver dudas.</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {activeTab === 'ice' && analysisSections.ice.content && (
+                          <div className="mt-8 p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <h3 className="text-lg font-semibold text-emerald-800">Priorización Estratégica</h3>
+                            </div>
+                            <p className="text-sm text-slate-600">Las iniciativas han sido priorizadas usando la metodología ICE (Impact × Confidence × Ease). Enfócate en las de mayor score para maximizar el ROI.</p>
+                          </div>
+                        )}
+
+                        {activeTab === 'roi' && analysisSections.roi.content && (
+                          <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <h3 className="text-lg font-semibold text-purple-800">Análisis Financiero</h3>
+                            </div>
+                            <p className="text-sm text-slate-600">El análisis de ROI muestra el potencial de retorno de inversión. Considera estos números en tu propuesta comercial.</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-20">
@@ -1075,6 +1394,7 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                            activeTab === 'roi' ? 'ROI Analysis' :
                            activeTab === 'insights' ? 'Strategic Insights' :
                            activeTab === 'followup' ? 'Follow-up Plan' :
+                           activeTab === 'deck' ? '🎯 Deck Comercial' :
                            '📊 Reporte Consolidado'}
                         </h3>
                         <p className="text-slate-600">
@@ -1084,6 +1404,7 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                                                                     activeTab === 'ice' ? 'ICE scoring' :
                                                                     activeTab === 'roi' ? 'análisis de ROI' :
                                                                     activeTab === 'insights' ? 'insights estratégicos' :
+                                                                    activeTab === 'deck' ? 'deck comercial' :
                                                                     'plan de seguimiento'}`}
                         </p>
                         {activeTab === 'consolidated' && (
@@ -1096,6 +1417,19 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
                                 <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                               </svg>
                               Generar Reporte Consolidado
+                            </button>
+                          </div>
+                        )}
+                        {activeTab === 'deck' && (
+                          <div className="mt-6">
+                            <button
+                              onClick={() => analyzeSection('deck')}
+                              className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 mx-auto"
+                            >
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                              </svg>
+                              Generar Deck Comercial
                             </button>
                           </div>
                         )}

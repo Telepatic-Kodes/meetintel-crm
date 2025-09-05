@@ -98,37 +98,45 @@ export async function POST(req: NextRequest) {
     // Define section-specific prompts
     const sectionPrompts = {
       overview: {
-        system: `Eres un analista de consultoría estratégica especializado en reuniones B2B. Genera un resumen ejecutivo profesional y conciso de la reunión usando formato Markdown estructurado.`,
+        system: `Eres un analista de consultoría estratégica especializado en reuniones B2B. Genera un resumen ejecutivo profesional, conciso y accionable de la reunión usando formato Markdown estructurado con insights profundos y recomendaciones específicas.`,
         user: `Analiza esta transcripción y genera un resumen ejecutivo estructurado en Markdown que incluya:
 
-## Resumen Ejecutivo
+### 🎯 Objetivo de la Reunión
+[Describe el propósito principal con contexto estratégico]
 
-### Objetivo de la Reunión
-[Describe el propósito principal]
+### 👥 Participantes Clave
+- **Nombre**: Rol, responsabilidades y nivel de influencia
+- **Nombre**: Rol, responsabilidades y nivel de influencia
 
-### Participantes Clave
-- **Nombre**: Rol y responsabilidades
-- **Nombre**: Rol y responsabilidades
+### 📊 Principales Temas Discutidos
+1. **Tema 1**: Descripción breve + nivel de importancia (Alto/Medio/Bajo)
+2. **Tema 2**: Descripción breve + nivel de importancia (Alto/Medio/Bajo)
+3. **Tema 3**: Descripción breve + nivel de importancia (Alto/Medio/Bajo)
 
-### Principales Temas Discutidos
-1. Tema 1: Descripción breve
-2. Tema 2: Descripción breve
-3. Tema 3: Descripción breve
+### ✅ Decisiones Tomadas
+- **Decisión 1**: Descripción, responsables y impacto esperado
+- **Decisión 2**: Descripción, responsables y impacto esperado
 
-### Decisiones Tomadas
-- Decisión 1: Descripción y responsables
-- Decisión 2: Descripción y responsables
+### 🚀 Próximos Pasos
+- **Acción**: Responsable | Fecha ISO | Prioridad | CTA específico
+- **Acción**: Responsable | Fecha ISO | Prioridad | CTA específico
 
-### Próximos Pasos
-- **Acción**: Responsable | Fecha | Prioridad
-- **Acción**: Responsable | Fecha | Prioridad
+### 📈 Nivel de Engagement
+**Alto/Medio/Bajo** - Justificación con evidencia específica de la transcripción
 
-### Nivel de Engagement
-**Alto/Medio/Bajo** - Justificación breve
+### ⚠️ Riesgos Identificados
+- **Riesgo 1**: Descripción, probabilidad, impacto y estrategia de mitigación
+- **Riesgo 2**: Descripción, probabilidad, impacto y estrategia de mitigación
 
-### Riesgos Identificados
-- Riesgo 1: Descripción y mitigación
-- Riesgo 2: Descripción y mitigación
+### 💡 Insights Clave
+- **Insight 1**: Observación estratégica importante
+- **Insight 2**: Oportunidad no mencionada explícitamente
+- **Insight 3**: Patrón de comportamiento relevante
+
+### 🎯 Recomendaciones Inmediatas
+1. **Acción crítica**: Qué hacer en las próximas 24-48 horas
+2. **Preparación**: Qué preparar para el siguiente contacto
+3. **Seguimiento**: Cómo estructurar el seguimiento
 
 Transcripción: ${transcript}`
       },
@@ -377,8 +385,8 @@ Transcripción: ${transcript}`
 Transcripción: ${transcript}`
       },
       energy: {
-        system: `Eres un analista de comportamiento y dinámicas de grupo especializado en análisis de energía, sentimiento y probabilidad de conversión comercial. Genera un dashboard completo con KPIs específicos usando formato Markdown estructurado.`,
-        user: `Analiza la energía, sentimiento y perfil de los participantes en esta reunión, incluyendo un dashboard con KPIs específicos y score de conversión usando este formato:
+        system: `Eres un analista de comportamiento y dinámicas de grupo especializado en análisis de energía, sentimiento y probabilidad de conversión comercial. Genera un dashboard completo con KPIs específicos, insights accionables y recomendaciones estratégicas usando formato Markdown estructurado.`,
+        user: `Analiza la energía, sentimiento y perfil de los participantes en esta reunión, incluyendo un dashboard con KPIs específicos, score de conversión y recomendaciones accionables usando este formato:
 
 ## 📊 Dashboard de Energía y Conversión
 
@@ -492,6 +500,111 @@ Transcripción: ${transcript}`
 1. **[Acción 1]**: [Descripción específica con responsable y timeline]
 2. **[Acción 2]**: [Descripción específica con responsable y timeline]
 3. **[Acción 3]**: [Descripción específica con responsable y timeline]
+
+Transcripción: ${transcript}`
+      },
+      deck: {
+        system: `Eres un especialista en presentaciones comerciales B2B siguiendo la metodología y estilo visual de McKinsey & Company. Crea un deck comercial de 5 slides con el look and feel característico de McKinsey: diseño limpio, minimalista, datos-driven, con gráficos profesionales, colores corporativos (azul McKinsey, grises, blancos), tipografía clara, y estructura lógica. Usa formato Markdown estructurado con elementos visuales profesionales.`,
+        user: `Basándote en esta transcripción de reunión, crea un deck comercial siguiendo el estilo visual de McKinsey & Company usando este formato:
+
+## McKinsey-Style Commercial Deck - 5 Slides
+
+### Slide 1: Executive Summary & Value Proposition
+**McKinsey Header**: [Título ejecutivo claro y directo]
+**Key Message**: [Mensaje principal en una línea]
+**Content Structure**:
+- **Current State**: [Situación actual del cliente]
+- **Proposed Solution**: [Nuestra propuesta de valor]
+- **Expected Outcome**: [Resultado esperado]
+- **Key Metric**: [Métrica principal destacada en formato McKinsey]
+
+### Slide 2: Current State Analysis
+**McKinsey Header**: "Current State vs. Target State"
+**Content Structure**:
+- **Current Challenges**: [Desafíos actuales identificados]
+- **Gap Analysis**: [Análisis de brechas principales]
+- **Impact Assessment**: [Evaluación del impacto]
+- **Quantified Metrics**: [Métricas cuantificadas del estado actual]
+
+### Slide 3: Proposed Solution & Methodology
+**McKinsey Header**: "Recommended Approach"
+**Content Structure**:
+- **Solution Framework**: [Marco de la solución propuesta]
+- **Implementation Phases**: [Fases de implementación]
+  - **Phase 1**: [Descripción de la fase 1]
+  - **Phase 2**: [Descripción de la fase 2]
+  - **Phase 3**: [Descripción de la fase 3]
+- **Resource Requirements**: [Requisitos de recursos]
+
+### Slide 4: Business Case & ROI
+**McKinsey Header**: "Business Case & Financial Impact"
+**Content Structure**:
+- **Investment Required**: [Inversión requerida]
+- **Expected ROI**: [ROI esperado]
+- **Quantified Benefits**: [Beneficios cuantificados]
+- **Payback Period**: [Período de recuperación]
+- **Risk Mitigation**: [Mitigación de riesgos]
+
+### Slide 5: Implementation Roadmap
+**McKinsey Header**: "Next Steps & Implementation Plan"
+**Content Structure**:
+- **Decision Required**: [Decisión requerida]
+- **Timeline**: [Cronograma de implementación]
+- **Key Stakeholders**: [Stakeholders clave]
+- **Success Metrics**: [Métricas de éxito]
+- **Next Milestone**: [Próximo hito importante]
+
+### McKinsey-Style Presentation Notes
+- **Objective**: [Objetivo de la presentación]
+- **Audience**: [Audiencia objetivo]
+- **Duration**: [Duración recomendada]
+- **Key Messages**: [Mensajes clave a transmitir]
+- **Expected Questions**: [Preguntas esperadas y respuestas]
+
+### McKinsey Visual Guidelines
+- **Color Palette**: McKinsey Blue (#1f4e79), Charcoal Gray (#2c3e50), Light Gray (#ecf0f1), White (#ffffff)
+- **Typography**: Sans-serif fonts (Arial, Helvetica), Clear hierarchy
+- **Charts & Graphics**: Clean bar charts, line graphs, process flows
+- **Layout**: Minimalist design, plenty of white space, data-driven focus
+- **Icons**: Simple, professional icons, minimal use of decorative elements
+
+### 📊 Dashboard Visual Elements
+Para cada slide, incluye elementos visuales tipo dashboard:
+
+#### Slide 1: Executive Summary Dashboard
+- **KPI Cards**: [Métricas clave en formato de tarjetas]
+- **Progress Bar**: [Barra de progreso del proyecto]
+- **Timeline Chart**: [Gráfico de línea temporal]
+
+#### Slide 2: Current State Dashboard
+- **Gap Analysis Chart**: [Gráfico de barras comparativo]
+- **Impact Matrix**: [Matriz de impacto vs probabilidad]
+- **Process Flow Diagram**: [Diagrama de flujo de procesos actuales]
+
+#### Slide 3: Solution Dashboard
+- **Implementation Timeline**: [Gantt chart o timeline visual]
+- **Resource Allocation Chart**: [Gráfico de asignación de recursos]
+- **Methodology Flow**: [Diagrama de metodología]
+
+#### Slide 4: ROI Dashboard
+- **ROI Calculation Chart**: [Gráfico de cálculo de ROI]
+- **Cost-Benefit Analysis**: [Gráfico de análisis costo-beneficio]
+- **Payback Period Chart**: [Gráfico de período de recuperación]
+
+#### Slide 5: Implementation Dashboard
+- **Milestone Timeline**: [Timeline de hitos clave]
+- **Stakeholder Matrix**: [Matriz de stakeholders]
+- **Success Metrics Dashboard**: [Dashboard de métricas de éxito]
+
+### 🎨 Visual Elements to Include
+- **Bar Charts**: Para comparaciones y métricas
+- **Line Graphs**: Para tendencias y proyecciones
+- **Pie Charts**: Para distribución de recursos
+- **Process Flows**: Para metodologías y flujos
+- **Timeline Charts**: Para cronogramas y hitos
+- **KPI Cards**: Para métricas destacadas
+- **Progress Bars**: Para avance de proyectos
+- **Matrices**: Para análisis de impacto y stakeholders
 
 Transcripción: ${transcript}`
       }
