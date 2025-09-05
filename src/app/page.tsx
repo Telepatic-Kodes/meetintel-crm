@@ -68,12 +68,29 @@ export default function Page() {
     const cleanContent = (content: string, sectionTitle: string) => {
       if (!content) return '*No disponible - Ejecute el análisis correspondiente primero*';
       
+      // Remove code block markers that might wrap markdown content
+      let cleanedContent = content
+        .replace(/```markdown\n/g, '')
+        .replace(/```\n/g, '')
+        .replace(/```/g, '');
+      
       // Remove the main title if it exists to avoid duplication
-      const lines = content.split('\n');
-      const filteredLines = lines.filter(line => {
-        // Remove lines that are just the section title
-        const cleanLine = line.replace(/^#+\s*/, '').trim();
-        return !cleanLine.toLowerCase().includes(sectionTitle.toLowerCase());
+      const lines = cleanedContent.split('\n');
+      const filteredLines = lines.filter((line, index) => {
+        // Skip the first few lines that might contain the main title
+        if (index < 3) {
+          const cleanLine = line.replace(/^#+\s*/, '').trim();
+          const lowerLine = cleanLine.toLowerCase();
+          const lowerTitle = sectionTitle.toLowerCase();
+          
+          // Check for exact matches or very similar titles
+          if (lowerLine === lowerTitle || 
+              lowerLine.includes(lowerTitle) || 
+              lowerTitle.includes(lowerLine)) {
+            return false; // Remove this line
+          }
+        }
+        return true;
       });
       
       return filteredLines.join('\n').trim();
