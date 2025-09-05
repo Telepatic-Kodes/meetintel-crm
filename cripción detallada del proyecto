@@ -1,0 +1,3 @@
+[33m75b16e5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m  Mejoras de seguridad, performance y estabilidad
+[33m759f8e6[m Enhance: Mejorar diseño del reporte con estilo McKinsey profesional - Agregar componentes visuales avanzados, tablas elegantes, métricas KPI y gráficos - Implementar diseño responsive con tipografía serif y colores corporativos - Añadir iconos específicos para cada sección del análisis
+[33m5af7020[m Fix: Mover TypeScript y @types a dependencies para build en producción

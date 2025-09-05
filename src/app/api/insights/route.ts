@@ -82,11 +82,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate transcript length (max 100,000 characters to prevent API limits)
-    if (transcript.length > 100000) {
+    // Validate transcript length (max 1,000,000 characters for very long meetings)
+    if (transcript.length > 1000000) {
       logRequest(ip, 'POST', '/api/insights', 400, 'Transcript too long');
       return NextResponse.json(
-        { ok: false, error: 'La transcripción es demasiado larga (máximo 100,000 caracteres)' },
+        { ok: false, error: 'La transcripción es demasiado larga (máximo 1,000,000 caracteres). Para reuniones muy largas, considera dividir en secciones.' },
         { status: 400 }
       );
     }
@@ -423,7 +423,7 @@ Analiza esta transcripción siguiendo el flujo completo de MeetingIntel Agent y 
           { role: "user", content: selectedPrompt.user },
         ],
         temperature: 0.2,
-        max_tokens: 4000,
+        max_tokens: transcript.length > 200000 ? 8000 : 4000, // More tokens for large files
       }),
     });
 

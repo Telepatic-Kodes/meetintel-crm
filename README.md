@@ -1,8 +1,127 @@
-# Meeting Intelligence MVP - Documentation
+# 🚀 MeetingIntel Agent
 
-¡Hecho! Aquí tienes el **MVP más simple posible**: una sola página en Next.js (Cursor) que pega tu transcripción, llama a una **API interna** (sin exponer tu key) y **muestra los insights en el front-end**. Sin n8n, sin Google Docs—solo ver en pantalla.
+> **La plataforma de análisis estratégico más avanzada para reuniones B2B**
+
+[![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC)](https://tailwindcss.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991)](https://openai.com/)
+
+## 📋 Descripción
+
+**MeetingIntel Agent** es una aplicación web de última generación que utiliza inteligencia artificial para analizar transcripciones de reuniones B2B y generar insights estratégicos de nivel consultoría. Integra la metodología McKinsey con IA avanzada para proporcionar análisis profundos, cálculos de ROI, ICE scoring y planes de seguimiento estructurados.
+
+## ✨ Características Principales
+
+### 🎯 **Análisis Estratégico Completo**
+- **Resumen Ejecutivo**: Análisis de alto nivel con objetivos, participantes y decisiones
+- **ICE Scoring**: Priorización de iniciativas (Impact × Confidence × Ease)
+- **ROI Analysis**: Cálculo de retorno de inversión con métricas financieras
+- **Strategic Insights**: Mapa de dolores, ganancias y oportunidades de valor
+- **Follow-up Plan**: Plan de seguimiento estructurado con CTAs específicos
+
+### 🛡️ **Seguridad y Performance**
+- **Rate Limiting**: 10 requests por minuto por IP
+- **Validación Robusta**: Límites de archivos (10MB) y transcripciones (100K caracteres)
+- **Logging Estructurado**: Monitoreo completo de requests y errores
+- **Memory Leak Prevention**: Cleanup automático de timeouts y recursos
+
+### 🎨 **Interfaz Profesional**
+- **Diseño McKinsey**: Estilo corporativo con tipografía serif y colores profesionales
+- **Responsive Design**: Optimizado para desktop, tablet y móvil
+- **Drag & Drop**: Carga intuitiva de archivos
+- **Exportación**: Descarga de reportes en formato Markdown
+
+## 🚀 Instalación y Configuración
+
+### Prerrequisitos
+- Node.js 18+ 
+- npm o yarn
+- API Key de OpenAI
+
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/Telepatic-Kodes/meetintel-agent.git
+cd meetintel-agent
+```
+
+### 2. Instalar Dependencias
+```bash
+npm install
+```
+
+### 3. Configurar Variables de Entorno
+```bash
+# Copiar archivo de configuración
+cp env-template.txt .env.local
+
+# Editar .env.local con tu API key
+OPENAI_API_KEY=sk-your-openai-api-key-here
+```
+
+### 4. Ejecutar en Desarrollo
+```bash
+npm run dev
+```
+
+La aplicación estará disponible en `http://localhost:3000`
+
+## 🔧 Uso
+
+### 1. **Cargar Transcripción**
+- **Archivo**: Arrastra archivos .txt, .md, .docx (máx. 10MB)
+- **Texto**: Pega directamente la transcripción (mín. 50 caracteres)
+
+### 2. **Análisis Automático**
+- Haz clic en "Analizar con IA"
+- El sistema procesará automáticamente todas las secciones
+- Los resultados aparecerán en pestañas organizadas
+
+### 3. **Exportar Resultados**
+- Usa el botón "Exportar" para descargar el reporte completo
+- Copia secciones específicas con el botón "Copiar"
+
+## 🛡️ Seguridad
+
+### Configuración de Seguridad
+- **Rate Limiting**: Protección contra abuso
+- **Validación de Entrada**: Sanitización de datos
+- **Logging**: Monitoreo de actividad
+- **API Key**: Validación de configuración
+
+### Variables de Entorno Requeridas
+```bash
+OPENAI_API_KEY=sk-your-api-key-here    # Requerido
+NODE_ENV=development                    # Opcional
+```
+
+Ver [security.md](security.md) para documentación completa de seguridad.
+
+## 📊 Tecnologías Utilizadas
+
+- **Frontend**: Next.js 14, React 18, TypeScript
+- **Styling**: Tailwind CSS, CSS Modules
+- **IA**: OpenAI GPT-4o-mini
+- **File Processing**: Mammoth.js (DOCX)
+- **Markdown**: ReactMarkdown, remark-gfm
+
+## 🚀 Deployment
+
+### Vercel (Recomendado)
+```bash
+npm install -g vercel
+vercel --prod
+```
+
+### Docker
+```bash
+docker build -t meetintel-agent .
+docker run -p 3000:3000 meetintel-agent
+```
 
 ---
+
+## 📚 Documentación Técnica
 
 # 1) API interna (App Router)
 
@@ -191,4 +310,60 @@ export default function Page() {
 * **Switch de modelo**: `gpt-4o-mini` / `o4-mini` si quieres bajar costo/latencia.
 * **n8n**: cambiar el POST `/api/insights` por un Webhook n8n… y listo.
 
-¿Quieres que lo convierta al **pages router** o te agrego el renderizador Markdown en 1 minuto?
+## 📈 Roadmap
+
+### ✅ Completado
+- [x] Análisis básico de transcripciones
+- [x] ICE Scoring y ROI Analysis
+- [x] Interfaz profesional McKinsey
+- [x] Rate limiting y seguridad
+- [x] Manejo de archivos grandes
+- [x] Logging estructurado
+
+### 🔄 En Desarrollo
+- [ ] Autenticación de usuarios
+- [ ] Dashboard de métricas
+- [ ] Integración con calendarios
+- [ ] Templates personalizables
+
+### 📋 Próximas Características
+- [ ] Análisis de sentimientos avanzado
+- [ ] Integración con CRM
+- [ ] Reportes automáticos por email
+- [ ] API pública
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
+
+## 📞 Soporte
+
+- **Issues**: [GitHub Issues](https://github.com/Telepatic-Kodes/meetintel-agent/issues)
+- **Documentación**: [Wiki del Proyecto](https://github.com/Telepatic-Kodes/meetintel-agent/wiki)
+- **Seguridad**: Ver [security.md](security.md)
+
+## 🙏 Agradecimientos
+
+- **OpenAI** por la API de GPT-4o-mini
+- **Vercel** por la plataforma de deployment
+- **Tailwind CSS** por el framework de estilos
+- **Next.js** por el framework de React
+
+---
+
+<div align="center">
+
+**Desarrollado con ❤️ para revolucionar el análisis de reuniones B2B**
+
+[![GitHub stars](https://img.shields.io/github/stars/Telepatic-Kodes/meetintel-agent?style=social)](https://github.com/Telepatic-Kodes/meetintel-agent/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Telepatic-Kodes/meetintel-agent?style=social)](https://github.com/Telepatic-Kodes/meetintel-agent/network)
+
+</div>

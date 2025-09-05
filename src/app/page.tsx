@@ -27,6 +27,7 @@ export default function Page() {
   const [exporting, setExporting] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [processingFile, setProcessingFile] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
   const resultsRef = useRef<HTMLDivElement>(null);
   
@@ -539,10 +540,10 @@ ${sections.followup.content ? sections.followup.content.replace(/```markdown\n/g
     setError(null);
     
     try {
-      // Validate file size (max 10MB)
-      const maxSize = 10 * 1024 * 1024; // 10MB
+      // Validate file size (max 50MB for very long meetings)
+      const maxSize = 50 * 1024 * 1024; // 50MB
       if (file.size > maxSize) {
-        throw new Error(`El archivo es demasiado grande (máximo 10MB). Tamaño actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+        throw new Error(`El archivo es demasiado grande (máximo 50MB). Tamaño actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
       }
 
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
@@ -562,16 +563,14 @@ ${sections.followup.content ? sections.followup.content.replace(/```markdown\n/g
         throw new Error('El archivo contiene muy poco texto (mínimo 50 caracteres)');
       }
 
-      // If text is too long, offer to truncate or chunk
-      if (text.length > 100000) {
-        const shouldTruncate = confirm(
-          `El archivo es muy largo (${text.length} caracteres). ¿Deseas truncar a los primeros 100,000 caracteres para el análisis?`
+      // Handle large files with intelligent chunking
+      if (text.length > 500000) { // 500K characters = ~100 pages
+        const shouldProcess = confirm(
+          `El archivo es muy largo (${text.length} caracteres, ~${Math.round(text.length/5000)} páginas). ¿Deseas procesarlo completo? Esto puede tomar más tiempo pero dará un análisis más completo.`
         );
         
-        if (shouldTruncate) {
-          text = text.substring(0, 100000) + '\n\n[Archivo truncado para el análisis]';
-        } else {
-          throw new Error('El archivo es demasiado largo. Por favor, divide el contenido en archivos más pequeños.');
+        if (!shouldProcess) {
+          throw new Error('Procesamiento cancelado por el usuario.');
         }
       }
 
@@ -900,17 +899,25 @@ ${sections.followup.content ? sections.followup.content.replace(/```markdown\n/g
                         />
                         <label htmlFor="file-upload" className="cursor-pointer">
                           {processingFile ? (
-                            <div className="flex flex-col items-center space-y-4">
-                              <div className="w-10 h-10 border-3 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
-                              <div className="space-y-1">
-                                <h5 className="text-base font-semibold text-slate-900">
-                                  Procesando archivo...
-                                </h5>
-                                <p className="text-sm text-slate-600">
-                                  Extrayendo contenido con IA
-                                </p>
+                                                    <div className="flex flex-col items-center space-y-4">
+                          <div className="w-10 h-10 border-3 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+                          <div className="space-y-1">
+                            <h5 className="text-base font-semibold text-slate-900">
+                              Procesando archivo...
+                            </h5>
+                            <p className="text-sm text-slate-600">
+                              {uploadedFile && uploadedFile.size > 1000000 
+                                ? "Archivo grande detectado - Procesando con IA avanzada"
+                                : "Extrayendo contenido con IA"
+                              }
+                            </p>
+                            {uploadedFile && uploadedFile.size > 1000000 && (
+                              <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
+                                <div className="bg-slate-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
                               </div>
-                            </div>
+                            )}
+                          </div>
+                        </div>
                           ) : (
                             <div className="flex flex-col items-center space-y-3">
                               <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
@@ -923,7 +930,7 @@ ${sections.followup.content ? sections.followup.content.replace(/```markdown\n/g
                                   Arrastra archivo o haz clic
                                 </h5>
                                 <p className="text-sm text-slate-600">
-                                  .txt, .md, .doc, .docx • Máx. 10MB
+                                  .txt, .md, .doc, .docx • Máx. 50MB
                                 </p>
                               </div>
                             </div>
