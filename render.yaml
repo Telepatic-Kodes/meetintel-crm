@@ -3,15 +3,12 @@ services:
     name: meetintel-agent
     env: node
     plan: free
-    region: oregon
-    branch: master
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install && npm run build
     startCommand: npm start
-    healthCheckPath: /
-    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
       - key: OPENAI_API_KEY
         sync: false
-        required: true
+    healthCheckPath: /
+    autoDeploy: true
