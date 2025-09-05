@@ -336,7 +336,8 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
       insights: { loading: false, content: '' },
       followup: { loading: false, content: '' },
       energy: { loading: false, content: '' },
-      consolidated: { loading: false, content: '' }
+      consolidated: { loading: false, content: '' },
+      deck: { loading: false, content: '' }
     });
     
     try {
@@ -674,59 +675,6 @@ ${cleanContent(sections.energy.content, 'dashboard de energía')}
         {children}
       </td>
     ),
-    // Custom components for McKinsey-style elements
-    div: ({children, className}: any) => {
-      if (className?.includes('mckinsey-metric')) {
-        return (
-          <div className="bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-200 rounded-xl p-6 my-6 shadow-sm">
-            {children}
-          </div>
-        );
-      }
-      if (className?.includes('mckinsey-chart')) {
-        return (
-          <div className="bg-white border border-slate-200 rounded-xl p-6 my-8 shadow-lg">
-            {children}
-          </div>
-        );
-      }
-      if (className?.includes('mckinsey-insight')) {
-        return (
-          <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-l-4 border-emerald-500 rounded-r-lg p-6 my-6">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="text-emerald-900 font-medium">{children}</div>
-            </div>
-          </div>
-        );
-      }
-      if (className?.includes('mckinsey-kpi')) {
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
-            {children}
-          </div>
-        );
-      }
-      if (className?.includes('mckinsey-kpi-item')) {
-        return (
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-            {children}
-          </div>
-        );
-      }
-      if (className?.includes('mckinsey-progress')) {
-        return (
-          <div className="bg-white border border-slate-200 rounded-xl p-6 my-6 shadow-sm">
-            {children}
-          </div>
-        );
-      }
-      return <div className={className}>{children}</div>;
-    },
     // Custom span for KPI values
     span: ({children, className}: any) => {
       if (className?.includes('kpi-value')) {
