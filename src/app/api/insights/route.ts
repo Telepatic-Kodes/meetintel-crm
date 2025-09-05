@@ -1,7 +1,64 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Rate limiting store (in production, use Redis or similar)
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Rate limiting function
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 10; // 10 requests per minute
+  
+  const userLimit = rateLimitStore.get(ip);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    rateLimitStore.set(ip, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+  
+  if (userLimit.count >= maxRequests) {
+    return false;
+  }
+  
+  userLimit.count++;
+  return true;
+}
+
+// Logging function
+function logRequest(ip: string, method: string, endpoint: string, status: number, error?: string) {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${method} ${endpoint} - ${status} - IP: ${ip}${error ? ` - Error: ${error}` : ''}`);
+  
+  // In production, send to logging service
+  if (process.env.NODE_ENV === 'production') {
+    // Send to external logging service
+  }
+}
+
 export async function POST(req: NextRequest) {
+  const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+  
   try {
+    // Check rate limit
+    if (!checkRateLimit(ip)) {
+      logRequest(ip, 'POST', '/api/insights', 429, 'Rate limit exceeded');
+      return NextResponse.json(
+        { ok: false, error: 'Demasiadas solicitudes. Intenta nuevamente en 1 minuto.' },
+        { status: 429 }
+      );
+    }
+
+    // Validate API key
+    if (!process.env.OPENAI_API_KEY) {
+      logRequest(ip, 'POST', '/api/insights', 500, 'OpenAI API key not configured');
+      return NextResponse.json(
+        { ok: false, error: 'Configuración del servidor incompleta' },
+        { status: 500 }
+      );
+    }
+
+    // Log successful request start
+    logRequest(ip, 'POST', '/api/insights', 200);
     const { 
       raw_transcript = "", 
       meeting_info = {},
@@ -18,8 +75,18 @@ export async function POST(req: NextRequest) {
 
     // Validate input - ensure transcript is provided and has minimum length
     if (!transcript || transcript.trim().length < 50) {
+      logRequest(ip, 'POST', '/api/insights', 400, 'Invalid transcript length');
       return NextResponse.json(
         { ok: false, error: 'Falta "transcript" o es muy corto (≥ 50 caracteres)' },
+        { status: 400 }
+      );
+    }
+
+    // Validate transcript length (max 100,000 characters to prevent API limits)
+    if (transcript.length > 100000) {
+      logRequest(ip, 'POST', '/api/insights', 400, 'Transcript too long');
+      return NextResponse.json(
+        { ok: false, error: 'La transcripción es demasiado larga (máximo 100,000 caracteres)' },
         { status: 400 }
       );
     }
@@ -363,6 +430,7 @@ Analiza esta transcripción siguiendo el flujo completo de MeetingIntel Agent y 
     if (!response.ok) {
       const errorData = await response.text();
       console.error("OpenAI API Error:", errorData);
+      logRequest(ip, 'POST', '/api/insights', 500, `OpenAI API Error: ${errorData}`);
       return NextResponse.json(
         { ok: false, error: "Error al procesar con OpenAI" }, 
         { status: 500 }
@@ -384,6 +452,7 @@ Analiza esta transcripción siguiendo el flujo completo de MeetingIntel Agent y 
     });
   } catch (error: any) {
     console.error("API Error:", error);
+    logRequest(ip, 'POST', '/api/insights', 500, error?.message || "Unknown error");
     return NextResponse.json(
       { ok: false, error: error?.message || "Error interno del servidor" }, 
       { status: 500 }

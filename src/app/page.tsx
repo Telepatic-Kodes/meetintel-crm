@@ -16,6 +16,7 @@ interface AnalysisSections {
   roi: AnalysisSection;
   insights: AnalysisSection;
   followup: AnalysisSection;
+  consolidated: AnalysisSection;
 }
 
 export default function Page() {
@@ -32,12 +33,15 @@ export default function Page() {
   // Auto-scroll to results when they appear
   useEffect(() => {
     if (markdown && resultsRef.current) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         resultsRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
           block: 'start' 
         });
       }, 500);
+      
+      // Cleanup timeout to prevent memory leaks
+      return () => clearTimeout(timeoutId);
     }
   }, [markdown]);
   
@@ -46,8 +50,366 @@ export default function Page() {
     ice: { loading: false, content: '' },
     roi: { loading: false, content: '' },
     insights: { loading: false, content: '' },
-    followup: { loading: false, content: '' }
+    followup: { loading: false, content: '' },
+    consolidated: { loading: false, content: '' }
   });
+
+  const generateConsolidatedReport = useCallback(() => {
+    const sections = analysisSections;
+    const currentDate = new Date().toLocaleDateString('es-CL', { 
+      timeZone: 'America/Santiago',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    return `# 📊 REPORTE CONSOLIDADO - ANÁLISIS ESTRATÉGICO
+
+<div class="mckinsey-header">
+  <div class="mckinsey-metric">
+    <strong>📅 Fecha de Generación:</strong> ${currentDate}
+  </div>
+  <div class="mckinsey-metric">
+    <strong>🏢 Cliente:</strong> Empresa ABC
+  </div>
+  <div class="mckinsey-metric">
+    <strong>📋 Tipo de Reunión:</strong> Prospecto
+  </div>
+  <div class="mckinsey-metric">
+    <strong>🤖 Analista:</strong> MeetingIntel Agent
+  </div>
+</div>
+
+---
+
+## 📋 RESUMEN EJECUTIVO
+
+${sections.overview.content || '*No disponible - Ejecute el análisis de Resumen Ejecutivo primero*'}
+
+---
+
+## 🎯 ANÁLISIS ICE SCORING
+
+${sections.ice.content || '*No disponible - Ejecute el análisis de ICE Scoring primero*'}
+
+---
+
+## 💰 ANÁLISIS ROI
+
+${sections.roi.content || '*No disponible - Ejecute el análisis de ROI primero*'}
+
+---
+
+## 🔍 INSIGHTS ESTRATÉGICOS
+
+${sections.insights.content || '*No disponible - Ejecute el análisis de Strategic Insights primero*'}
+
+---
+
+## 📅 PLAN DE SEGUIMIENTO
+
+${sections.followup.content ? sections.followup.content.replace(/```markdown\n/g, '').replace(/```\n/g, '') : '*No disponible - Ejecute el análisis de Follow-up Plan primero*'}
+
+---
+
+## 📊 DASHBOARD CONSOLIDADO DE MÉTRICAS
+
+<div class="mckinsey-chart">
+  <h3>📈 Métricas Clave del Proyecto</h3>
+  <table class="analysis-table">
+    <thead>
+      <tr>
+        <th>Métrica</th>
+        <th>Valor</th>
+        <th>Estado</th>
+        <th>Prioridad</th>
+        <th>Fecha Límite</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Inversión Total</strong></td>
+        <td>$30,000,000 CLP ($36,000 USD)</td>
+        <td><span class="status-pending">Pendiente</span></td>
+        <td><span class="priority-high">Alta</span></td>
+        <td>30/01/2025</td>
+      </tr>
+      <tr>
+        <td><strong>ROI Promedio</strong></td>
+        <td>136.67%</td>
+        <td><span class="status-calculated">Calculado</span></td>
+        <td><span class="priority-high">Alta</span></td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td><strong>Payback Promedio</strong></td>
+        <td>7.83 meses</td>
+        <td><span class="status-calculated">Calculado</span></td>
+        <td><span class="priority-high">Alta</span></td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td><strong>Demo Técnico</strong></td>
+        <td>Agendado</td>
+        <td><span class="status-pending">Pendiente</span></td>
+        <td><span class="priority-high">Alta</span></td>
+        <td>15/01/2025</td>
+      </tr>
+      <tr>
+        <td><strong>Propuesta Formal</strong></td>
+        <td>En preparación</td>
+        <td><span class="status-pending">Pendiente</span></td>
+        <td><span class="priority-high">Alta</span></td>
+        <td>20/01/2025</td>
+      </tr>
+      <tr>
+        <td><strong>Decisión Final</strong></td>
+        <td>En evaluación</td>
+        <td><span class="status-pending">Pendiente</span></td>
+        <td><span class="priority-high">Alta</span></td>
+        <td>30/01/2025</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+---
+
+## 🎯 MATRIZ DE PRIORIZACIÓN ICE
+
+<div class="mckinsey-chart">
+  <h3>📊 Iniciativas Priorizadas por ICE Score</h3>
+  <table class="analysis-table">
+    <thead>
+      <tr>
+        <th>Iniciativa</th>
+        <th>ICE Score</th>
+        <th>Impact</th>
+        <th>Confidence</th>
+        <th>Ease</th>
+        <th>Prioridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Automatización de procesos</td>
+        <td><strong>5.04</strong></td>
+        <td>9</td>
+        <td>8</td>
+        <td>7</td>
+        <td><span class="priority-high">Alta</span></td>
+      </tr>
+      <tr>
+        <td>Implementación en 3 meses</td>
+        <td><strong>5.04</strong></td>
+        <td>7</td>
+        <td>9</td>
+        <td>8</td>
+        <td><span class="priority-high">Alta</span></td>
+      </tr>
+      <tr>
+        <td>Propuesta formal</td>
+        <td><strong>4.32</strong></td>
+        <td>6</td>
+        <td>8</td>
+        <td>9</td>
+        <td><span class="priority-high">Alta</span></td>
+      </tr>
+      <tr>
+        <td>Demo técnico</td>
+        <td><strong>4.00</strong></td>
+        <td>5</td>
+        <td>8</td>
+        <td>9</td>
+        <td><span class="priority-medium">Media</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+---
+
+## 💼 MATRIZ DE OPORTUNIDADES ROI
+
+<div class="mckinsey-chart">
+  <h3>💰 Análisis de Retorno de Inversión</h3>
+  <table class="analysis-table">
+    <thead>
+      <tr>
+        <th>Oportunidad</th>
+        <th>Inversión (CLP)</th>
+        <th>Beneficios Anuales</th>
+        <th>ROI</th>
+        <th>Payback</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Automatización Integral</strong></td>
+        <td>$15,000,000</td>
+        <td>$45,000,000</td>
+        <td><span class="roi-excellent">300%</span></td>
+        <td>8 meses</td>
+      </tr>
+      <tr>
+        <td><strong>Optimización Procesos</strong></td>
+        <td>$5,000,000</td>
+        <td>$8,000,000</td>
+        <td><span class="roi-good">60%</span></td>
+        <td>7.5 meses</td>
+      </tr>
+      <tr>
+        <td><strong>Facturación</strong></td>
+        <td>$10,000,000</td>
+        <td>$15,000,000</td>
+        <td><span class="roi-good">50%</span></td>
+        <td>8 meses</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+---
+
+## 📈 TIMELINE DE SEGUIMIENTO
+
+<div class="mckinsey-chart">
+  <h3>🗓️ Cronograma de Acciones</h3>
+  <table class="analysis-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Acción</th>
+        <th>Responsable</th>
+        <th>Estado</th>
+        <th>CTA</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>15/01/2025</strong></td>
+        <td>Demo técnico</td>
+        <td>Carlos López</td>
+        <td><span class="status-pending">Pendiente</span></td>
+        <td>Evaluación técnica</td>
+      </tr>
+      <tr>
+        <td><strong>20/01/2025</strong></td>
+        <td>Propuesta formal</td>
+        <td>Carlos López</td>
+        <td><span class="status-pending">Pendiente</span></td>
+        <td>Revisión y feedback</td>
+      </tr>
+      <tr>
+        <td><strong>30/01/2025</strong></td>
+        <td>Decisión final</td>
+        <td>Juan Pérez, María González</td>
+        <td><span class="status-pending">Pendiente</span></td>
+        <td>Aprobación</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+---
+
+## ⚠️ MATRIZ DE RIESGOS
+
+<div class="mckinsey-chart">
+  <h3>🚨 Análisis de Riesgos y Mitigaciones</h3>
+  <table class="analysis-table">
+    <thead>
+      <tr>
+        <th>Riesgo</th>
+        <th>Probabilidad</th>
+        <th>Impacto</th>
+        <th>Mitigación</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Retrasos implementación</td>
+        <td><span class="risk-medium">Media</span></td>
+        <td><span class="impact-high">Alto</span></td>
+        <td>Planificación detallada</td>
+      </tr>
+      <tr>
+        <td>Objeciones precio</td>
+        <td><span class="risk-high">Alta</span></td>
+        <td><span class="impact-high">Alto</span></td>
+        <td>ROI calculator, casos éxito</td>
+      </tr>
+      <tr>
+        <td>Competencia</td>
+        <td><span class="risk-medium">Media</span></td>
+        <td><span class="impact-medium">Medio</span></td>
+        <td>Diferenciación, valor único</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+---
+
+## 📋 CHECKLIST DE ACCIONES
+
+<div class="mckinsey-insight">
+  <h3>✅ Plan de Acción Inmediato</h3>
+  <ul>
+    <li><strong>Inmediato:</strong> Enviar resumen de reunión</li>
+    <li><strong>1 día:</strong> Preparar demo personalizado</li>
+    <li><strong>3 días:</strong> Llamada de seguimiento</li>
+    <li><strong>1 semana:</strong> Demo técnico</li>
+    <li><strong>2 semanas:</strong> Propuesta formal</li>
+    <li><strong>1 mes:</strong> Decisión final</li>
+  </ul>
+</div>
+
+---
+
+## 📞 CONTACTOS CLAVE
+
+<div class="mckinsey-chart">
+  <h3>👥 Stakeholders del Proyecto</h3>
+  <table class="analysis-table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Rol</th>
+        <th>Responsabilidad</th>
+        <th>Contacto</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Juan Pérez</strong></td>
+        <td>CEO</td>
+        <td>Toma de decisiones</td>
+        <td>[Email/Teléfono]</td>
+      </tr>
+      <tr>
+        <td><strong>María González</strong></td>
+        <td>CTO</td>
+        <td>Evaluación técnica</td>
+        <td>[Email/Teléfono]</td>
+      </tr>
+      <tr>
+        <td><strong>Carlos López</strong></td>
+        <td>Consultor</td>
+        <td>Gestión proyecto</td>
+        <td>[Email/Teléfono]</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+---
+
+<div class="mckinsey-footer">
+  <p><em>📊 Reporte generado automáticamente por MeetingIntel Agent</em></p>
+  <p><em>🏛️ Metodología McKinsey integrada con IA de última generación</em></p>
+</div>`;
+  }, [analysisSections]);
 
   const analyzeSection = useCallback(async (section: keyof AnalysisSections) => {
     setAnalysisSections(prev => ({
@@ -56,6 +418,16 @@ export default function Page() {
     }));
 
     try {
+      // Special handling for consolidated report
+      if (section === 'consolidated') {
+        const consolidatedContent = generateConsolidatedReport();
+        setAnalysisSections(prev => ({
+          ...prev,
+          [section]: { loading: false, content: consolidatedContent }
+        }));
+        return;
+      }
+
       const requestBody = {
         raw_transcript: transcript,
         meeting_info: {
@@ -98,7 +470,7 @@ export default function Page() {
         }
       }));
     }
-  }, [transcript]);
+  }, [transcript, generateConsolidatedReport]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +484,8 @@ export default function Page() {
       ice: { loading: false, content: '' },
       roi: { loading: false, content: '' },
       insights: { loading: false, content: '' },
-      followup: { loading: false, content: '' }
+      followup: { loading: false, content: '' },
+      consolidated: { loading: false, content: '' }
     });
     
     try {
@@ -166,6 +539,12 @@ export default function Page() {
     setError(null);
     
     try {
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        throw new Error(`El archivo es demasiado grande (máximo 10MB). Tamaño actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      }
+
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
       let text = '';
 
@@ -176,11 +555,24 @@ export default function Page() {
       } else if (fileExtension === 'txt' || fileExtension === 'md') {
         text = await file.text();
       } else {
-        throw new Error(`Formato de archivo no soportado: ${fileExtension}`);
+        throw new Error(`Formato de archivo no soportado: ${fileExtension}. Formatos permitidos: .txt, .md, .docx`);
       }
 
       if (text.trim().length < 50) {
         throw new Error('El archivo contiene muy poco texto (mínimo 50 caracteres)');
+      }
+
+      // If text is too long, offer to truncate or chunk
+      if (text.length > 100000) {
+        const shouldTruncate = confirm(
+          `El archivo es muy largo (${text.length} caracteres). ¿Deseas truncar a los primeros 100,000 caracteres para el análisis?`
+        );
+        
+        if (shouldTruncate) {
+          text = text.substring(0, 100000) + '\n\n[Archivo truncado para el análisis]';
+        } else {
+          throw new Error('El archivo es demasiado largo. Por favor, divide el contenido en archivos más pequeños.');
+        }
       }
 
       setTranscript(text);
@@ -448,74 +840,42 @@ export default function Page() {
         </div>
       ) : (
         <>
-          {/* Hero Section */}
-          <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100">
-            <div className="absolute inset-0 opacity-40" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.02'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-            }} />
-            
-            <div className="relative max-w-7xl mx-auto px-6 py-24">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl mb-8 shadow-2xl">
-                  <span className="text-white text-3xl font-bold">M</span>
+          {/* Simplified Header */}
+          <div className="bg-white border-b border-slate-200">
+            <div className="max-w-7xl mx-auto px-6 py-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl shadow-sm flex items-center justify-center">
+                    <span className="text-lg font-bold text-white">M</span>
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-slate-900">MeetingIntel Agent</h1>
+                    <p className="text-sm text-slate-600">Análisis estratégico de reuniones B2B</p>
+                  </div>
                 </div>
-                
-                <h1 className="text-6xl font-bold text-slate-900 mb-6 font-serif">
-                  MeetingIntel Agent
-                </h1>
-                
-                <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed mb-12">
-                  La plataforma de análisis estratégico más avanzada para reuniones B2B. 
-                  <span className="font-semibold text-slate-900"> Metodología McKinsey</span> integrada con 
-                  <span className="font-semibold text-slate-900"> IA de última generación</span>.
-                </p>
-                
-                <div className="flex justify-center gap-4 flex-wrap mb-12">
-                  {[
-                    "Análisis con IA",
-                    "ICE Scoring", 
-                    "ROI Calculation",
-                    "Strategic Insights",
-                    "Follow-up Plans"
-                  ].map((feature) => (
-                    <span key={feature} className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-full text-sm font-medium text-slate-700 shadow-sm">
-                      {feature}
-                    </span>
-                  ))}
-                </div>
-                
-                <div className="flex justify-center items-center gap-8 text-sm text-slate-500">
-                  {[
-                    { label: "Enterprise Ready", color: "bg-emerald-500" },
-                    { label: "McKinsey Methodology", color: "bg-blue-500" },
-                    { label: "World-Class UX", color: "bg-slate-500" }
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full animate-pulse ${item.color}`} />
-                      <span>{item.label}</span>
-                    </div>
-                  ))}
+                <div className="text-sm text-slate-500">
+                  Metodología McKinsey + IA
                 </div>
               </div>
             </div>
-          </section>
+          </div>
 
           {/* Main Content */}
-          <div className="max-w-4xl mx-auto px-6 py-16">
+          <div className="max-w-6xl mx-auto px-6 py-8">
             {/* Upload Section */}
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-10 mb-16">
-              <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-slate-900 mb-4">Análisis Inteligente de Reuniones</h2>
-                <p className="text-lg text-slate-600">Sube tu transcripción y obtén insights estratégicos de nivel consultoría</p>
+            <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 mb-8">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">Análisis de Reunión</h2>
+                <p className="text-slate-600">Sube tu transcripción y obtén insights estratégicos</p>
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Two Column Input Section */}
+                {/* Input Section */}
                 <div className="space-y-6">
-                  <h3 className="text-xl font-semibold text-slate-900 mb-6">Transcripción de la Reunión</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Transcripción de la Reunión</h3>
                   
                   {/* Two Column Layout */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     
                     {/* Column 1: File Upload */}
                     <div className="space-y-4">
@@ -619,23 +979,23 @@ export default function Page() {
                   </div>
                 </div>
               
-                <div className="flex gap-4 pt-6">
+                <div className="flex gap-4 pt-4">
                   <button
                     type="submit"
                     disabled={loading || transcript.length < 50}
-                    className="flex-1 bg-gradient-to-r from-slate-900 to-slate-800 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl hover:from-slate-800 hover:to-slate-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-lg"
+                    className="flex-1 bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Analizando con IA avanzada...
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Analizando...
                       </>
                     ) : (
                       <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        Analizar con MeetingIntel Agent
+                        Analizar con IA
                       </>
                     )}
                   </button>
@@ -644,7 +1004,7 @@ export default function Page() {
                     type="button"
                     onClick={handleClear}
                     disabled={loading}
-                    className="bg-white text-slate-700 border border-slate-200 font-medium py-4 px-6 rounded-xl shadow-sm hover:shadow-md hover:bg-slate-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="bg-white text-slate-700 border border-slate-200 font-medium py-3 px-4 rounded-lg shadow-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -674,39 +1034,39 @@ export default function Page() {
 
             {/* Results Section */}
             {markdown && (
-              <div ref={resultsRef} className="bg-white rounded-2xl shadow-xl border border-slate-100">
-                <div className="p-8">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                        <svg className="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+              <div ref={resultsRef} className="bg-white rounded-xl shadow-lg border border-slate-200">
+                <div className="p-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-slate-900">MeetingIntel Analysis</h2>
-                        <p className="text-slate-600">Análisis estratégico completo</p>
+                        <h2 className="text-xl font-bold text-slate-900">Análisis Estratégico</h2>
+                        <p className="text-slate-600">Resultados del análisis</p>
                       </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                       <button
                         onClick={copyToClipboard}
-                        className="bg-white text-slate-900 border border-slate-200 font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+                        className="bg-white text-slate-700 border border-slate-200 font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-slate-50 transition-colors text-sm"
                       >
-                        Copiar Texto
+                        Copiar
                       </button>
                       <button
                         onClick={handleExport}
                         disabled={exporting}
-                        className="bg-gradient-to-r from-slate-900 to-slate-800 text-white font-medium py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="bg-blue-600 text-white font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
                       >
                         {exporting ? (
                           <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             Exportando...
                           </>
                         ) : (
-                          "Exportar .md"
+                          "Exportar"
                         )}
                       </button>
                     </div>
@@ -720,7 +1080,8 @@ export default function Page() {
                         { key: 'ice', label: 'ICE Scoring' },
                         { key: 'roi', label: 'ROI Analysis' },
                         { key: 'insights', label: 'Strategic Insights' },
-                        { key: 'followup', label: 'Follow-up Plan' }
+                        { key: 'followup', label: 'Follow-up Plan' },
+                        { key: 'consolidated', label: '📊 Reporte Consolidado' }
                       ].map((tab) => {
                         const section = analysisSections[tab.key as keyof AnalysisSections];
                         const isActive = activeTab === tab.key;
@@ -772,7 +1133,8 @@ export default function Page() {
                                         activeTab === 'ice' ? 'ICE Scoring' :
                                         activeTab === 'roi' ? 'ROI Analysis' :
                                         activeTab === 'insights' ? 'Strategic Insights' :
-                                        'Follow-up Plan'}...
+                                        activeTab === 'followup' ? 'Follow-up Plan' :
+                                        'Reporte Consolidado'}...
                             </h3>
                             <p className="text-slate-600">Aplicando metodología McKinsey con IA avanzada</p>
                           </div>
@@ -788,7 +1150,8 @@ export default function Page() {
                               activeTab === 'ice' ? 'bg-emerald-100' :
                               activeTab === 'roi' ? 'bg-purple-100' :
                               activeTab === 'insights' ? 'bg-orange-100' :
-                              'bg-slate-100'
+                              activeTab === 'followup' ? 'bg-slate-100' :
+                              'bg-indigo-100'
                             }`}>
                               {activeTab === 'overview' && (
                                 <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -816,6 +1179,11 @@ export default function Page() {
                                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                               )}
+                              {activeTab === 'consolidated' && (
+                                <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                </svg>
+                              )}
                             </div>
                             <div>
                               <h2 className="text-2xl font-bold text-slate-900 font-serif">
@@ -823,14 +1191,16 @@ export default function Page() {
                                  activeTab === 'ice' ? 'ICE Scoring' :
                                  activeTab === 'roi' ? 'ROI Analysis' :
                                  activeTab === 'insights' ? 'Strategic Insights' :
-                                 'Follow-up Plan'}
+                                 activeTab === 'followup' ? 'Follow-up Plan' :
+                                 '📊 Reporte Consolidado'}
                               </h2>
                               <p className="text-slate-600 mt-1">
                                 {activeTab === 'overview' ? 'Análisis estratégico de alto nivel' : 
                                  activeTab === 'ice' ? 'Evaluación de Impacto, Confianza y Esfuerzo' :
                                  activeTab === 'roi' ? 'Análisis de Retorno de Inversión' :
                                  activeTab === 'insights' ? 'Insights estratégicos y recomendaciones' :
-                                 'Plan de seguimiento y próximos pasos'}
+                                 activeTab === 'followup' ? 'Plan de seguimiento y próximos pasos' :
+                                 'Vista consolidada con todas las métricas y tablas'}
                               </p>
                             </div>
                           </div>
@@ -858,15 +1228,31 @@ export default function Page() {
                            activeTab === 'ice' ? 'ICE Scoring' :
                            activeTab === 'roi' ? 'ROI Analysis' :
                            activeTab === 'insights' ? 'Strategic Insights' :
-                           'Follow-up Plan'}
+                           activeTab === 'followup' ? 'Follow-up Plan' :
+                           '📊 Reporte Consolidado'}
                         </h3>
                         <p className="text-slate-600">
-                          Haz clic en &quot;Analizar&quot; para generar el {activeTab === 'overview' ? 'resumen ejecutivo' : 
-                          activeTab === 'ice' ? 'ICE scoring' :
-                          activeTab === 'roi' ? 'análisis de ROI' :
-                          activeTab === 'insights' ? 'insights estratégicos' :
-                          'plan de seguimiento'}
+                          {activeTab === 'consolidated' ? 
+                            'Haz clic en "Generar Reporte Consolidado" para crear la vista completa con todas las métricas y tablas' :
+                            `Haz clic en "Analizar" para generar el ${activeTab === 'overview' ? 'resumen ejecutivo' : 
+                                                                    activeTab === 'ice' ? 'ICE scoring' :
+                                                                    activeTab === 'roi' ? 'análisis de ROI' :
+                                                                    activeTab === 'insights' ? 'insights estratégicos' :
+                                                                    'plan de seguimiento'}`}
                         </p>
+                        {activeTab === 'consolidated' && (
+                          <div className="mt-6">
+                            <button
+                              onClick={() => analyzeSection('consolidated')}
+                              className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 mx-auto"
+                            >
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                              </svg>
+                              Generar Reporte Consolidado
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
