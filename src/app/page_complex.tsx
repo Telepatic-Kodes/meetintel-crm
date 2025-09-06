@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import mammoth from "mammoth";
+import { ReportContent } from "@/components/reports/ReportContent";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface AnalysisSection {
@@ -351,7 +352,7 @@ export default function Page() {
           </motion.div>
         )}
 
-        {/* Results Section - Simplified */}
+        {/* Results Section */}
         <AnimatePresence>
           {markdown && (
             <motion.div
@@ -360,63 +361,16 @@ export default function Page() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="w-full max-w-6xl mx-auto"
+              className="w-full"
             >
-              <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-slate-900">Análisis Estratégico</h2>
-                      <p className="text-slate-600">Resultados del análisis completado</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleClear}
-                      className="bg-slate-100 text-slate-700 border border-slate-200 font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-slate-200 transition-colors text-sm flex items-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      Nuevo Análisis
-                    </button>
-                    <button
-                      onClick={copyToClipboard}
-                      className="bg-white text-slate-700 border border-slate-200 font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-slate-50 transition-colors text-sm"
-                    >
-                      Copiar
-                    </button>
-                    <button
-                      onClick={handleExport}
-                      disabled={exporting}
-                      className="bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
-                    >
-                      {exporting ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Exportando...
-                        </>
-                      ) : (
-                        "Exportar"
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="prose prose-lg max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {markdown}
-                  </ReactMarkdown>
-                </div>
-              </div>
+              <ReportContent
+                markdown={markdown}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onCopy={copyToClipboard}
+                onExport={handleExport}
+                onNewAnalysis={handleClear}
+              />
             </motion.div>
           )}
         </AnimatePresence>
