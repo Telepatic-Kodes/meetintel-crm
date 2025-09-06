@@ -4,11 +4,6 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import mammoth from "mammoth";
-import { AnalyticsProvider, useAnalytics } from "@/components/analytics/AnalyticsProvider";
-import { ThemeProvider, useTheme } from "@/components/theme/ThemeProvider";
-import { useKeyboardShortcuts, APP_SHORTCUTS } from "@/hooks/useKeyboardShortcuts";
-import { Dashboard } from "@/components/dashboard/Dashboard";
-import { SettingsPanel } from "@/components/settings/SettingsPanel";
 
 interface AnalysisSection {
   loading: boolean;
@@ -26,9 +21,7 @@ interface AnalysisSections {
   deck: AnalysisSection;
 }
 
-function MainApp() {
-  const { track } = useAnalytics();
-  const { config } = useTheme();
+export default function Page() {
   const [transcript, setTranscript] = useState("");
   const [loading, setLoading] = useState(false);
   const [markdown, setMarkdown] = useState<string | null>(null);
@@ -49,16 +42,8 @@ function MainApp() {
     consolidated: { loading: false, content: '' },
     deck: { loading: false, content: '' }
   });
-  const [showDashboard, setShowDashboard] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const resultsRef = useRef<HTMLDivElement>(null);
   
-  // Track session start
-  useEffect(() => {
-    track('session_start', { sessionId: Date.now().toString() });
-  }, [track]);
-
   // Auto-scroll to results when they appear
   useEffect(() => {
     if (markdown && resultsRef.current) {
@@ -72,65 +57,6 @@ function MainApp() {
       return () => clearTimeout(timeoutId);
     }
   }, [markdown]);
-
-  // Keyboard shortcuts
-  useKeyboardShortcuts([
-    {
-      ...APP_SHORTCUTS.NEW_ANALYSIS,
-      action: () => {
-        if (markdown) handleClear();
-      }
-    },
-    {
-      ...APP_SHORTCUTS.COPY_RESULT,
-      action: () => {
-        if (markdown) copyToClipboard();
-      }
-    },
-    {
-      ...APP_SHORTCUTS.EXPORT_RESULT,
-      action: () => {
-        if (markdown) handleExport();
-      }
-    },
-    {
-      ...APP_SHORTCUTS.NEXT_TAB,
-      action: () => {
-        const tabs = ['overview', 'ice', 'roi', 'insights', 'followup', 'energy', 'consolidated', 'deck'];
-        const currentIndex = tabs.indexOf(activeTab);
-        const nextIndex = (currentIndex + 1) % tabs.length;
-        setActiveTab(tabs[nextIndex]);
-        track('tab_switched', { from: activeTab, to: tabs[nextIndex], method: 'keyboard' });
-      }
-    },
-    {
-      ...APP_SHORTCUTS.PREV_TAB,
-      action: () => {
-        const tabs = ['overview', 'ice', 'roi', 'insights', 'followup', 'energy', 'consolidated', 'deck'];
-        const currentIndex = tabs.indexOf(activeTab);
-        const prevIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
-        setActiveTab(tabs[prevIndex]);
-        track('tab_switched', { from: activeTab, to: tabs[prevIndex], method: 'keyboard' });
-      }
-    },
-    {
-      ...APP_SHORTCUTS.FOCUS_SEARCH,
-      action: () => {
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) searchInput.focus();
-      }
-    },
-    {
-      ...APP_SHORTCUTS.TOGGLE_SIDEBAR,
-      action: () => setShowDashboard(!showDashboard)
-    },
-    {
-      ...APP_SHORTCUTS.HELP,
-      action: () => {
-        addNotification('Atajos de teclado: Ctrl+N (Nuevo), Ctrl+C (Copiar), Ctrl+E (Exportar), Ctrl+Tab (Siguiente pestaña), Ctrl+K (Buscar), Ctrl+B (Dashboard), ? (Ayuda)', 'info');
-      }
-    }
-  ]);
 
   // Add notification function
   const addNotification = useCallback((message: string, type: 'success' | 'info' | 'warning' = 'info') => {
@@ -153,7 +79,6 @@ function MainApp() {
     setProcessingFile(true);
     setProcessingProgress(0);
     setUploadedFile(file);
-    track('file_upload_started', { fileName: file.name, fileSize: file.size, fileType: file.type });
 
     try {
       const progressInterval = setInterval(() => {
@@ -184,7 +109,6 @@ function MainApp() {
         setProcessingFile(false);
         setProcessingProgress(0);
         addNotification('Archivo procesado exitosamente', 'success');
-        track('file_upload_completed', { fileName: file.name, textLength: text.length });
       }, 500);
 
     } catch (error) {
@@ -192,20 +116,16 @@ function MainApp() {
       setProcessingFile(false);
       setProcessingProgress(0);
       addNotification('Error al procesar el archivo', 'warning');
-      track('file_upload_error', { fileName: file.name, error: error instanceof Error ? error.message : 'Unknown error' });
     }
-  }, [addNotification, track]);
+  }, [addNotification]);
 
   const analyzeSection = useCallback(async (sectionKey: keyof AnalysisSections) => {
     if (!transcript.trim()) return;
 
-    const startTime = Date.now();
     setAnalysisSections(prev => ({
       ...prev,
       [sectionKey]: { loading: true, content: '' }
     }));
-
-    track('section_analysis_started', { section: sectionKey });
 
     try {
       const response = await fetch('/api/insights', {
@@ -235,13 +155,10 @@ function MainApp() {
         throw new Error(data.error);
       }
 
-      const duration = Date.now() - startTime;
       setAnalysisSections(prev => ({
         ...prev,
         [sectionKey]: { loading: false, content: data[sectionKey] || data.overview || '' }
       }));
-
-      track('section_analysis_completed', { section: sectionKey, duration });
 
     } catch (error) {
       console.error(`Error analyzing ${sectionKey}:`, error);
@@ -250,18 +167,14 @@ function MainApp() {
         [sectionKey]: { loading: false, content: '' }
       }));
       addNotification(`Error al generar ${sectionKey}`, 'warning');
-      track('section_analysis_error', { section: sectionKey, error: error instanceof Error ? error.message : 'Unknown error' });
     }
-  }, [transcript, addNotification, track]);
+  }, [transcript, addNotification]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    const startTime = Date.now();
     setLoading(true);
     setError(null);
     setMarkdown(null);
-    
-    track('analysis_started', { transcriptLength: transcript.length });
     
     // Reset all sections
     setAnalysisSections({
@@ -304,7 +217,6 @@ function MainApp() {
         throw new Error(data.error);
       }
 
-      const duration = Date.now() - startTime;
       setMarkdown(data.overview);
       setAnalysisSections(prev => ({
         ...prev,
@@ -312,17 +224,15 @@ function MainApp() {
       }));
       
       addNotification('Análisis completado exitosamente', 'success');
-      track('analysis_completed', { duration, sectionsGenerated: 1 });
       
     } catch (error) {
       console.error('Error:', error);
       setError(error instanceof Error ? error.message : 'Error desconocido');
       addNotification('Error al generar el análisis', 'warning');
-      track('analysis_error', { error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }
-  }, [transcript, addNotification, track]);
+  }, [transcript, addNotification]);
 
   const copyToClipboard = useCallback(async () => {
     const content = analysisSections[activeTab as keyof AnalysisSections]?.content || markdown;
@@ -331,12 +241,11 @@ function MainApp() {
     try {
       await navigator.clipboard.writeText(content);
       addNotification('Contenido copiado al portapapeles', 'success');
-      track('content_copied', { section: activeTab, contentLength: content.length });
     } catch (error) {
       console.error('Error copying to clipboard:', error);
       addNotification('Error al copiar al portapapeles', 'warning');
     }
-  }, [analysisSections, activeTab, markdown, addNotification, track]);
+  }, [analysisSections, activeTab, markdown, addNotification]);
 
   const handleExport = useCallback(async () => {
     const content = analysisSections[activeTab as keyof AnalysisSections]?.content || markdown;
@@ -356,14 +265,13 @@ function MainApp() {
       URL.revokeObjectURL(url);
       
       addNotification('Archivo exportado exitosamente', 'success');
-      track('content_exported', { section: activeTab, contentLength: content.length });
     } catch (error) {
       console.error('Error exporting file:', error);
       addNotification('Error al exportar el archivo', 'warning');
     } finally {
       setExporting(false);
     }
-  }, [analysisSections, activeTab, markdown, addNotification, track]);
+  }, [analysisSections, activeTab, markdown, addNotification]);
 
   const handleClear = useCallback(() => {
     setTranscript("");
@@ -382,20 +290,9 @@ function MainApp() {
       deck: { loading: false, content: '' }
     });
     addNotification('Formulario limpiado', 'info');
-    track('analysis_cleared');
-  }, [addNotification, track]);
+  }, [addNotification]);
 
-  const handleTabChange = useCallback((tab: string) => {
-    setActiveTab(tab);
-    track('tab_switched', { from: activeTab, to: tab, method: 'click' });
-    
-    // Auto-generate section if not already loaded
-    if (!analysisSections[tab as keyof AnalysisSections]?.content && !analysisSections[tab as keyof AnalysisSections]?.loading) {
-      analyzeSection(tab as keyof AnalysisSections);
-    }
-  }, [activeTab, analysisSections, analyzeSection, track]);
-
-  // Enhanced markdown components with theme support
+  // Markdown components for enhanced styling
   const markdownComponents = {
     h1: ({children}: any) => (
       <h1 className="text-3xl font-bold text-slate-900 mb-6 border-b border-slate-200 pb-3">
@@ -480,8 +377,8 @@ function MainApp() {
   };
 
   return (
-    <main className={`min-h-screen bg-slate-50 ${config.animations ? '' : 'no-animations'} ${config.compactMode ? 'compact-mode' : ''}`}>
-      {/* Enhanced Notifications */}
+    <main className="min-h-screen bg-slate-50">
+      {/* Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {notifications.map((notification) => (
           <div
@@ -508,7 +405,7 @@ function MainApp() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Enhanced Header with Search and Actions */}
+        {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -518,45 +415,9 @@ function MainApp() {
               MeetingIntel Agent
             </h1>
           </div>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-6">
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
             La plataforma de análisis estratégico más avanzada para reuniones B2B con metodología McKinsey
           </p>
-          
-          {/* Search and Action Bar */}
-          <div className="flex items-center justify-center gap-4 max-w-2xl mx-auto">
-            <div className="relative flex-1">
-              <input
-                id="search-input"
-                type="text"
-                placeholder="Buscar en análisis..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <svg className="absolute left-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <button
-              onClick={() => setShowDashboard(true)}
-              className="p-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-              title="Dashboard (Ctrl+B)"
-            >
-              <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-              title="Configuración"
-            >
-              <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          </div>
         </div>
 
         {/* Input Section */}
@@ -569,7 +430,7 @@ function MainApp() {
                     Transcripción de la Reunión
                   </label>
                   
-                  {/* Enhanced File Upload Area */}
+                  {/* File Upload Area */}
                   <div className="mb-4">
                     <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
                       <input
@@ -650,7 +511,7 @@ function MainApp() {
           </div>
         )}
 
-        {/* Enhanced Results Section */}
+        {/* Results Section */}
         {markdown && (
           <div ref={resultsRef} className="bg-white rounded-xl shadow-lg border border-slate-200 transform transition-all duration-500 ease-in-out">
             <div className="p-6">
@@ -670,7 +531,6 @@ function MainApp() {
                   <button
                     onClick={handleClear}
                     className="bg-slate-100 text-slate-700 border border-slate-200 font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-slate-200 transition-colors text-sm flex items-center gap-2"
-                    title="Nuevo análisis (Ctrl+N)"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -680,7 +540,6 @@ function MainApp() {
                   <button
                     onClick={copyToClipboard}
                     className="bg-white text-slate-700 border border-slate-200 font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-slate-50 transition-colors text-sm"
-                    title="Copiar (Ctrl+C)"
                   >
                     Copiar
                   </button>
@@ -688,7 +547,6 @@ function MainApp() {
                     onClick={handleExport}
                     disabled={exporting}
                     className="bg-blue-600 text-white font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
-                    title="Exportar (Ctrl+E)"
                   >
                     {exporting ? (
                       <>
@@ -704,7 +562,7 @@ function MainApp() {
                   
               {/* Enhanced Tabs with Status Indicators */}
               <div className="border-b border-slate-200 mb-8">
-                <nav className="flex space-x-8 overflow-x-auto">
+                <nav className="flex space-x-8">
                   {[
                     { key: 'overview', label: 'Resumen Ejecutivo' },
                     { key: 'ice', label: 'ICE Scoring' },
@@ -723,8 +581,8 @@ function MainApp() {
                     return (
                       <button
                         key={tab.key}
-                        onClick={() => handleTabChange(tab.key)}
-                        className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
                           isActive
                             ? 'border-slate-900 text-slate-900'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -834,7 +692,7 @@ function MainApp() {
           </div>
         )}
 
-        {/* Enhanced Footer */}
+        {/* Footer */}
         <footer className="mt-20 text-center">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -866,20 +724,6 @@ function MainApp() {
           </div>
         </footer>
       </div>
-
-      {/* Modals */}
-      <Dashboard isOpen={showDashboard} onClose={() => setShowDashboard(false)} />
-      <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </main>
-  );
-}
-
-export default function Page() {
-  return (
-    <AnalyticsProvider>
-      <ThemeProvider>
-        <MainApp />
-      </ThemeProvider>
-    </AnalyticsProvider>
   );
 }
