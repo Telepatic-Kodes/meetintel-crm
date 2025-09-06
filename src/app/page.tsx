@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import mammoth from "mammoth";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface AnalysisSection {
   loading: boolean;
@@ -33,6 +32,16 @@ export default function Page() {
   const [processingProgress, setProcessingProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
   const [notifications, setNotifications] = useState<Array<{id: string, message: string, type: 'success' | 'info' | 'warning'}>>([]);
+  const [analysisSections, setAnalysisSections] = useState<AnalysisSections>({
+    overview: { loading: false, content: '' },
+    ice: { loading: false, content: '' },
+    roi: { loading: false, content: '' },
+    insights: { loading: false, content: '' },
+    followup: { loading: false, content: '' },
+    energy: { loading: false, content: '' },
+    consolidated: { loading: false, content: '' },
+    deck: { loading: false, content: '' }
+  });
   const resultsRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll to results when they appear
@@ -110,11 +119,74 @@ export default function Page() {
     }
   }, [addNotification]);
 
+  const analyzeSection = useCallback(async (sectionKey: keyof AnalysisSections) => {
+    if (!transcript.trim()) return;
+
+    setAnalysisSections(prev => ({
+      ...prev,
+      [sectionKey]: { loading: true, content: '' }
+    }));
+
+    try {
+      const response = await fetch('/api/insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          raw_transcript: transcript,
+          meeting_info: {
+            title: "Reunión Analizada",
+            type: "prospecto",
+            participants: [],
+            duration: "desconocida"
+          },
+          section: sectionKey
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setAnalysisSections(prev => ({
+        ...prev,
+        [sectionKey]: { loading: false, content: data[sectionKey] || data.overview || '' }
+      }));
+
+    } catch (error) {
+      console.error(`Error analyzing ${sectionKey}:`, error);
+      setAnalysisSections(prev => ({
+        ...prev,
+        [sectionKey]: { loading: false, content: '' }
+      }));
+      addNotification(`Error al generar ${sectionKey}`, 'warning');
+    }
+  }, [transcript, addNotification]);
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setMarkdown(null);
+    
+    // Reset all sections
+    setAnalysisSections({
+      overview: { loading: false, content: '' },
+      ice: { loading: false, content: '' },
+      roi: { loading: false, content: '' },
+      insights: { loading: false, content: '' },
+      followup: { loading: false, content: '' },
+      energy: { loading: false, content: '' },
+      consolidated: { loading: false, content: '' },
+      deck: { loading: false, content: '' }
+    });
     
     try {
       const requestBody = {
@@ -146,6 +218,11 @@ export default function Page() {
       }
 
       setMarkdown(data.overview);
+      setAnalysisSections(prev => ({
+        ...prev,
+        overview: { loading: false, content: data.overview || '' }
+      }));
+      
       addNotification('Análisis completado exitosamente', 'success');
       
     } catch (error) {
@@ -158,28 +235,30 @@ export default function Page() {
   }, [transcript, addNotification]);
 
   const copyToClipboard = useCallback(async () => {
-    if (!markdown) return;
+    const content = analysisSections[activeTab as keyof AnalysisSections]?.content || markdown;
+    if (!content) return;
     
     try {
-      await navigator.clipboard.writeText(markdown);
+      await navigator.clipboard.writeText(content);
       addNotification('Contenido copiado al portapapeles', 'success');
     } catch (error) {
       console.error('Error copying to clipboard:', error);
       addNotification('Error al copiar al portapapeles', 'warning');
     }
-  }, [markdown, addNotification]);
+  }, [analysisSections, activeTab, markdown, addNotification]);
 
   const handleExport = useCallback(async () => {
-    if (!markdown) return;
+    const content = analysisSections[activeTab as keyof AnalysisSections]?.content || markdown;
+    if (!content) return;
     
     setExporting(true);
     
     try {
-      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const blob = new Blob([content], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `analisis-estrategico-${new Date().toISOString().split('T')[0]}.md`;
+      a.download = `analisis-estrategico-${activeTab}-${new Date().toISOString().split('T')[0]}.md`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -192,7 +271,7 @@ export default function Page() {
     } finally {
       setExporting(false);
     }
-  }, [markdown, addNotification]);
+  }, [analysisSections, activeTab, markdown, addNotification]);
 
   const handleClear = useCallback(() => {
     setTranscript("");
@@ -200,20 +279,111 @@ export default function Page() {
     setError(null);
     setUploadedFile(null);
     setActiveTab('overview');
+    setAnalysisSections({
+      overview: { loading: false, content: '' },
+      ice: { loading: false, content: '' },
+      roi: { loading: false, content: '' },
+      insights: { loading: false, content: '' },
+      followup: { loading: false, content: '' },
+      energy: { loading: false, content: '' },
+      consolidated: { loading: false, content: '' },
+      deck: { loading: false, content: '' }
+    });
     addNotification('Formulario limpiado', 'info');
   }, [addNotification]);
+
+  // Markdown components for enhanced styling
+  const markdownComponents = {
+    h1: ({children}: any) => (
+      <h1 className="text-3xl font-bold text-slate-900 mb-6 border-b border-slate-200 pb-3">
+        {children}
+      </h1>
+    ),
+    h2: ({children}: any) => (
+      <h2 className="text-2xl font-bold text-slate-800 mb-4 mt-8">
+        {children}
+      </h2>
+    ),
+    h3: ({children}: any) => (
+      <h3 className="text-xl font-semibold text-slate-700 mb-3 mt-6">
+        {children}
+      </h3>
+    ),
+    p: ({children}: any) => (
+      <p className="text-slate-600 leading-relaxed mb-4">
+        {children}
+      </p>
+    ),
+    ul: ({children}: any) => (
+      <ul className="list-disc list-inside text-slate-600 mb-4 space-y-2">
+        {children}
+      </ul>
+    ),
+    ol: ({children}: any) => (
+      <ol className="list-decimal list-inside text-slate-600 mb-4 space-y-2">
+        {children}
+      </ol>
+    ),
+    li: ({children}: any) => (
+      <li className="text-slate-600 leading-relaxed">
+        {children}
+      </li>
+    ),
+    strong: ({children}: any) => (
+      <strong className="font-semibold text-slate-800">
+        {children}
+      </strong>
+    ),
+    em: ({children}: any) => (
+      <em className="italic text-slate-700">
+        {children}
+      </em>
+    ),
+    blockquote: ({children}: any) => (
+      <blockquote className="border-l-4 border-blue-500 pl-4 italic text-slate-600 bg-blue-50 py-2 rounded-r">
+        {children}
+      </blockquote>
+    ),
+    code: ({children}: any) => (
+      <code className="bg-slate-100 text-slate-800 px-2 py-1 rounded text-sm font-mono">
+        {children}
+      </code>
+    ),
+    pre: ({children}: any) => (
+      <pre className="bg-slate-100 text-slate-800 p-4 rounded-lg overflow-x-auto mb-4">
+        {children}
+      </pre>
+    ),
+    table: ({children}: any) => (
+      <div className="overflow-x-auto mb-6">
+        <table className="min-w-full border border-slate-200 rounded-lg">
+          {children}
+        </table>
+      </div>
+    ),
+    th: ({children}: any) => (
+      <th className="border border-slate-200 px-4 py-2 bg-slate-50 font-semibold text-slate-800 text-left">
+        {children}
+      </th>
+    ),
+    td: ({children}: any) => (
+      <td className="border border-slate-200 px-4 py-2 text-slate-600">
+        {children}
+      </td>
+    ),
+    hr: ({children}: any) => (
+      <hr className="my-8 border-slate-200" />
+    ),
+  };
 
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {notifications.map((notification) => (
-          <motion.div
+          <div
             key={notification.id}
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            className={`p-4 rounded-lg shadow-lg border max-w-sm ${
+            className={`p-4 rounded-lg shadow-lg border max-w-sm transform transition-all duration-300 ${
               notification.type === 'success' 
                 ? 'bg-green-50 border-green-200 text-green-800'
                 : notification.type === 'warning'
@@ -230,18 +400,13 @@ export default function Page() {
                 ×
               </button>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
+        <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white text-xl font-bold">M</span>
@@ -253,16 +418,11 @@ export default function Page() {
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
             La plataforma de análisis estratégico más avanzada para reuniones B2B con metodología McKinsey
           </p>
-        </motion.div>
+        </div>
 
         {/* Input Section */}
         {!markdown && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="max-w-4xl mx-auto"
-          >
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
@@ -348,78 +508,189 @@ export default function Page() {
                 </div>
               </form>
             </div>
-          </motion.div>
+          </div>
         )}
 
-        {/* Results Section - Simplified */}
-        <AnimatePresence>
-          {markdown && (
-            <motion.div
-              ref={resultsRef}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="w-full max-w-6xl mx-auto"
-            >
-              <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-slate-900">Análisis Estratégico</h2>
-                      <p className="text-slate-600">Resultados del análisis completado</p>
-                    </div>
+        {/* Results Section */}
+        {markdown && (
+          <div ref={resultsRef} className="bg-white rounded-xl shadow-lg border border-slate-200 transform transition-all duration-500 ease-in-out">
+            <div className="p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
                   </div>
-                  
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleClear}
-                      className="bg-slate-100 text-slate-700 border border-slate-200 font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-slate-200 transition-colors text-sm flex items-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      Nuevo Análisis
-                    </button>
-                    <button
-                      onClick={copyToClipboard}
-                      className="bg-white text-slate-700 border border-slate-200 font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-slate-50 transition-colors text-sm"
-                    >
-                      Copiar
-                    </button>
-                    <button
-                      onClick={handleExport}
-                      disabled={exporting}
-                      className="bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
-                    >
-                      {exporting ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Exportando...
-                        </>
-                      ) : (
-                        "Exportar"
-                      )}
-                    </button>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">Análisis Estratégico</h2>
+                    <p className="text-slate-600">Resultados del análisis</p>
                   </div>
                 </div>
-
-                {/* Content */}
-                <div className="prose prose-lg max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {markdown}
-                  </ReactMarkdown>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleClear}
+                    className="bg-slate-100 text-slate-700 border border-slate-200 font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-slate-200 transition-colors text-sm flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Nuevo Análisis
+                  </button>
+                  <button
+                    onClick={copyToClipboard}
+                    className="bg-white text-slate-700 border border-slate-200 font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-slate-50 transition-colors text-sm"
+                  >
+                    Copiar
+                  </button>
+                  <button
+                    onClick={handleExport}
+                    disabled={exporting}
+                    className="bg-blue-600 text-white font-medium py-2 px-3 rounded-lg shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                  >
+                    {exporting ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Exportando...
+                      </>
+                    ) : (
+                      "Exportar"
+                    )}
+                  </button>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  
+              {/* Enhanced Tabs with Status Indicators */}
+              <div className="border-b border-slate-200 mb-8">
+                <nav className="flex space-x-8">
+                  {[
+                    { key: 'overview', label: 'Resumen Ejecutivo' },
+                    { key: 'ice', label: 'ICE Scoring' },
+                    { key: 'roi', label: 'ROI Analysis' },
+                    { key: 'insights', label: 'Strategic Insights' },
+                    { key: 'followup', label: 'Follow-up Plan' },
+                    { key: 'energy', label: '⚡ Energy Dashboard' },
+                    { key: 'consolidated', label: '📊 Reporte Consolidado' },
+                    { key: 'deck', label: '🎯 Deck Comercial' }
+                  ].map((tab) => {
+                    const section = analysisSections[tab.key as keyof AnalysisSections];
+                    const isActive = activeTab === tab.key;
+                    const isLoading = section?.loading || false;
+                    const isCompleted = section?.content && !section?.loading;
+                    
+                    return (
+                      <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+                          isActive
+                            ? 'border-slate-900 text-slate-900'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
+                        }`}
+                      >
+                        {isLoading && (
+                          <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                        )}
+                        {isCompleted && !isLoading && (
+                          <div className="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                        {!isLoading && !isCompleted && (
+                          <div className="w-4 h-4 bg-slate-200 rounded-full" />
+                        )}
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Tab Content */}
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                {analysisSections[activeTab as keyof AnalysisSections]?.loading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="flex flex-col items-center gap-6">
+                      <div className="relative">
+                        <div className="w-16 h-16 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
+                        <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-slate-300 rounded-full animate-pulse" />
+                      </div>
+                      <div className="text-center">
+                        <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                          Generando {activeTab === 'overview' ? 'Resumen Ejecutivo' : 
+                                    activeTab === 'ice' ? 'ICE Scoring' :
+                                    activeTab === 'roi' ? 'ROI Analysis' :
+                                    activeTab === 'insights' ? 'Strategic Insights' :
+                                    activeTab === 'followup' ? 'Follow-up Plan' :
+                                    activeTab === 'energy' ? 'Energy Dashboard' :
+                                    activeTab === 'consolidated' ? 'Reporte Consolidado' :
+                                    'Deck Comercial'}...
+                        </h3>
+                        <p className="text-slate-600">Aplicando metodología McKinsey con IA avanzada</p>
+                        <div className="mt-4 w-64 bg-slate-100 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : analysisSections[activeTab as keyof AnalysisSections]?.content ? (
+                  <div className="p-10">
+                    <div className="prose prose-slate max-w-none">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={markdownComponents}
+                      >
+                        {analysisSections[activeTab as keyof AnalysisSections]?.content}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                        {activeTab === 'deck' ? 'Deck Comercial' : 'Sección'} no disponible
+                      </h3>
+                      <p className="text-slate-600 mb-4">
+                        {activeTab === 'deck' 
+                          ? 'Haz clic en "Generar Deck Comercial" para crear la presentación'
+                          : 'Esta sección se generará automáticamente'
+                        }
+                      </p>
+                      {activeTab === 'deck' && (
+                        <button
+                          onClick={() => analyzeSection('deck')}
+                          disabled={analysisSections.deck.loading}
+                          className="bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                        >
+                          {analysisSections.deck.loading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              Generando...
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                              Generar Deck Comercial
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <footer className="mt-20 text-center">
